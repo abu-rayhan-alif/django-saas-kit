@@ -21,6 +21,9 @@ python_version = "3.12"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 ignore_missing_imports = true
 strict = false
+explicit_package_bases = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
+packages = ["apps", "config", "services"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
