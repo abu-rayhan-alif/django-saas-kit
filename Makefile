@@ -1,0 +1,38 @@
+.PHONY: help up down build logs shell migrate test lint
+
+help:
+	@echo "Available commands:"
+	@echo "  make up       - Start local Docker stack"
+	@echo "  make down     - Stop local Docker stack"
+	@echo "  make build    - Build Docker images"
+	@echo "  make logs     - Tail web service logs"
+	@echo "  make shell    - Open Django shell in web container"
+	@echo "  make migrate  - Run database migrations"
+	@echo "  make test     - Run pytest locally"
+	@echo "  make lint     - Run ruff and mypy"
+
+up:
+	docker compose up -d --build
+
+down:
+	docker compose down
+
+build:
+	docker compose build
+
+logs:
+	docker compose logs -f web
+
+shell:
+	docker compose exec web python manage.py shell
+
+migrate:
+	docker compose exec web python manage.py migrate
+
+test:
+	pytest -v
+
+lint:
+	ruff check .
+	ruff format --check .
+	mypy .

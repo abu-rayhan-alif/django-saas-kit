@@ -1,0 +1,44 @@
+[project]
+name = "django-saas-kit"
+version = "0.1.0"
+description = "Production-ready Django SaaS starter kit"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["apps", "config", "services", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/*.py" = ["F405", "F403"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+strict = false
+explicit_package_bases = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
+packages = ["apps", "config", "services"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.mypy"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["config", "services"]
+omit = ["*/migrations/*", "*/tests/*", "manage.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_empty = true
