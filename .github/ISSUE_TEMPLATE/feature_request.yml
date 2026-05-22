@@ -1,0 +1,60 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. Clear use cases help us prioritize work.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem does this solve? Who benefits?
+      placeholder: As a [user type], I want [goal] so that [benefit].
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or change you would like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative approaches you considered?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Authentication / JWT
+        - Multi-tenancy
+        - RBAC
+        - Notifications
+        - API / DRF
+        - Docker / DevOps
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: This feature aligns with the project's SaaS starter scope
+          required: true
+        - label: I am willing to contribute a PR (optional)
+          required: false

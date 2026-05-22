@@ -35,6 +35,8 @@ jobs:
         run: ruff format --check .
 
       - name: Run mypy (type check)
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.mypy
         run: mypy .
 
   test:

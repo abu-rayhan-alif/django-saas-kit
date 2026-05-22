@@ -19,3 +19,9 @@ def test_prod_settings_load():
 def test_staging_settings_load():
     settings = importlib.import_module("config.settings.staging")
     assert hasattr(settings, "SECRET_KEY")
+
+
+def test_mypy_settings_load_without_env_file():
+    settings = importlib.import_module("config.settings.mypy")
+    assert settings.SECRET_KEY
+    assert settings.CACHES["default"]["BACKEND"].endswith("LocMemCache")

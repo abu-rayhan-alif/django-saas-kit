@@ -1,0 +1,75 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much detail as you can.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: Describe what you expected vs. what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Run '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: How are you running the project?
+      options:
+        - Docker Compose (local)
+        - Docker Compose (production)
+        - Local Python (venv)
+        - GitHub Actions CI
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      placeholder: e.g. 3.12.4
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / traceback
+      description: Paste error output or stack traces inside a code block.
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues before opening this one
+          required: true
+        - label: I am willing to open a PR to fix this (optional)
+          required: false

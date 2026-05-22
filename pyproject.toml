@@ -26,7 +26,7 @@ mypy_path = "$MYPY_CONFIG_FILE_DIR"
 packages = ["apps", "config", "services"]
 
 [tool.django-stubs]
-django_settings_module = "config.settings.local"
+django_settings_module = "config.settings.mypy"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.local"
