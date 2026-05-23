@@ -1,10 +1,8 @@
 import uuid
 
 import pytest
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-
 from apps.common.models import Record
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

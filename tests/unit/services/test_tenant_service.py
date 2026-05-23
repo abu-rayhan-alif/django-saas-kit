@@ -1,5 +1,4 @@
 import pytest
-
 from services.exceptions import ValidationServiceError
 from services.tenants import TenantService
 

@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth import get_user_model
-
 from services.exceptions import ConflictServiceError, ValidationServiceError
 from services.users import CreateUserInput, UserService
 
