@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
@@ -71,7 +72,7 @@ class BaseModel(models.Model):
         using: str | None = None,
         keep_parents: bool = False,
         *,
-        deleted_by: models.Model | None = None,
+        deleted_by: AbstractUser | None = None,
     ) -> tuple[int, dict[str, int]]:
         """Soft-delete this instance (override Django's hard delete)."""
         self.is_deleted = True

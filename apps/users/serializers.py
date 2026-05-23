@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
 
 User = get_user_model()
@@ -20,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "email", "first_name", "last_name", "display_name")
         read_only_fields = fields
 
-    def get_display_name(self, obj: User) -> str:
+    def get_display_name(self, obj: AbstractUser) -> str:
         from services.users import UserService
 
         return UserService.get_display_name(obj)

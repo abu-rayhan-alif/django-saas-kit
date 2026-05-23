@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -25,7 +26,7 @@ class UserService:
     """User registration and profile use-cases."""
 
     @staticmethod
-    def create_user(data: CreateUserInput) -> User:
+    def create_user(data: CreateUserInput) -> AbstractUser:
         """
         Create a new user with validated credentials.
 
@@ -67,6 +68,6 @@ class UserService:
         return user
 
     @staticmethod
-    def get_display_name(user: User) -> str:
+    def get_display_name(user: AbstractUser) -> str:
         full_name = user.get_full_name().strip()
         return full_name or user.username
