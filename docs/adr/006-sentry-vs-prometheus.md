@@ -25,10 +25,10 @@ Early-stage teams and L1/L2 boilerplate consumers benefit most from **fast feedb
 
 Adopt observability in **two phases**:
 
-1. **Phase 1 (now — documented, `planned` in code):** [Sentry](https://sentry.io/) for exception and performance monitoring.
+1. **Phase 1 (SAAS-603 — implemented):** [Sentry](https://sentry.io/) for exception and performance monitoring (`SENTRY_DSN` gates init).
 2. **Phase 2 (later — `planned`):** [Prometheus](https://prometheus.io/) + Grafana (or managed equivalent) for metrics, SLOs, and autoscaling signals.
 
-Implementation guide: [docs/observability.md](../observability.md). **No SDK wiring ships in the starter repo** until a follow-up story; env vars and onboarding steps are documented for forks.
+Implementation guide: [docs/observability.md](../observability.md).
 
 ---
 

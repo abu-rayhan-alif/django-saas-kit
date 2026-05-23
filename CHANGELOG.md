@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Dependabot weekly updates for Python packages and GitHub Actions (SAAS-703)
+- CI workflow documentation and coverage artifacts ([docs/testing.md](docs/testing.md)) (SAAS-801)
+
 ### Changed
 
 ### Fixed
@@ -35,7 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `examples/` demo config and OpenAPI request examples
 - Documentation: service layer guide, how-to guides (new app, role, Celery task), `CUSTOMIZATION.md`
 - GitHub template repository setup guide (`docs/setup/template-repository.md`)
-- Health check endpoint (`/health/`)
+- Liveness endpoint (`GET /health/`) and readiness endpoint (`GET /ready/`) (SAAS-602)
+- Sentry error monitoring via `SENTRY_DSN` (SAAS-603)
+- CORS (`django-cors-headers`), CSP, HSTS, and production TLS headers (SAAS-701)
+- DRF rate limiting — login 5/min, authenticated API 100/min (SAAS-702)
 - `Makefile` shortcuts for Docker, migrate, test, lint, and seed
 
 ### Changed

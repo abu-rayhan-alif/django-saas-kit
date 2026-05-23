@@ -30,7 +30,8 @@ Migrations run automatically via the container entrypoint.
 
 | Check | URL |
 |-------|-----|
-| Health | http://localhost:8000/health/ (database + **Redis**) |
+| Liveness | http://localhost:8000/health/ |
+| Readiness | http://localhost:8000/ready/ (database + **Redis**) |
 | **API docs (Swagger)** | **http://localhost:8000/api/docs/** |
 | ReDoc | http://localhost:8000/api/redoc/ |
 | OpenAPI schema | http://localhost:8000/api/schema/ |
@@ -100,8 +101,12 @@ Copy [`.env.example`](.env.example) to `.env` before running the app. Values bel
 | `JWT_REFRESH_TOKEN_LIFETIME_DAYS` | No | `7` | Refresh token lifetime |
 | `EMAIL_BACKEND` | No | `console` backend | Email delivery class |
 | `DEFAULT_FROM_EMAIL` | No | `noreply@example.com` | Sender address |
-| `SECURE_SSL_REDIRECT` | No | `False` | Force HTTPS (enable in production) |
-| `FRONTEND_URL` | No | — | Base URL for password-reset links in email |
+| `SECURE_SSL_REDIRECT` | No | `False` | Force HTTPS (`True` in production settings) |
+| `CORS_ALLOWED_ORIGINS` | No | `FRONTEND_URL` | Comma-separated browser origins for API CORS |
+| `THROTTLE_LOGIN_RATE` | No | `5/minute` | Login endpoint rate limit |
+| `THROTTLE_USER_RATE` | No | `100/minute` | Authenticated API rate limit |
+| `THROTTLE_ANON_RATE` | No | `20/minute` | Anonymous API rate limit |
+| `FRONTEND_URL` | No | `http://localhost:3000` | Base URL for password-reset links and default CORS |
 | `PASSWORD_RESET_TIMEOUT` | No | `3600` | Reset token lifetime (seconds) |
 | `RUN_COLLECTSTATIC` | No | `false` | Run `collectstatic` on container start |
 
@@ -138,7 +143,7 @@ make seed-demo
 - JWT (SimpleJWT) + registration + password reset
 - Service layer + domain exceptions
 - Docker Compose (web, PostgreSQL, Redis, Celery, beat)
-- GitHub Actions: ruff, mypy, pytest, Docker build
+- GitHub Actions CI: ruff, mypy, pytest (Postgres + Redis), Docker build — see [Testing & coverage](docs/testing.md)
 
 ## Start from this template
 
@@ -187,8 +192,18 @@ docker compose -f docker-compose.prod.yml up -d --build
 | `make migrate` | Run migrations in web container |
 | `make seed-demo` | Load demo tenants and admin user |
 | `make redis-check` | Verify Redis (`REDIS_URL`) |
-| `make test` | Run pytest |
-| `make lint` | ruff + mypy |
+| `make test` | Run pytest (80% coverage gate — see [docs/testing.md](docs/testing.md)) |
+| `make lint` | ruff + mypy (same as CI **Lint** job) |
+
+## CI & testing
+
+Every push to `main` / `develop` and every pull request runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+1. **Lint** — ruff + mypy  
+2. **Test** — pytest with PostgreSQL and Redis (coverage must stay ≥ **80%**)  
+3. **Build** — Docker image compile check  
+
+Coverage reports and badges: **[docs/testing.md](docs/testing.md)**.
 
 ## Extending the boilerplate
 
@@ -198,6 +213,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 | [Add a new RBAC role](docs/how-to/add-new-role.md) | Tenant roles |
 | [Add a Celery task](docs/how-to/add-new-celery-task.md) | Background jobs |
 | [Background jobs](docs/background-jobs.md) | Retry, idempotency, DLQ |
+| [Testing & coverage](docs/testing.md) | pytest, CI artifacts, 80% gate |
 | [CUSTOMIZATION.md](CUSTOMIZATION.md) | All `TODO` extension points |
 
 ## Versioning

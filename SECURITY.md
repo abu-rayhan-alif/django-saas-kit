@@ -4,7 +4,11 @@
 
 ---
 
-## Threat model (Asset → Threat → Mitigation)
+## Threat model
+
+Full detail (HTTP headers, CORS, CSP): **[docs/security/threat-model.md](docs/security/threat-model.md)**.
+
+### Summary (Asset → Threat → Mitigation)
 
 | Asset | Threat | Mitigation |
 |-------|--------|------------|
@@ -38,21 +42,7 @@ PASSWORD_HASHERS = [
 ]
 ```
 
-**Rate limiting** (example for login):
-
-```python
-# config/settings/prod.py
-REST_FRAMEWORK = {
-    ...
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "20/minute", "user": "100/minute"},
-}
-```
-
-Apply stricter scopes on `POST /api/v1/auth/token/` and registration routes.
+**Rate limiting** — implemented in `config/settings/base.py` (SAAS-702): login `5/minute`, authenticated API `100/minute`, anonymous `20/minute`. See [docs/security/threat-model.md](docs/security/threat-model.md#rate-limiting-saas-702).
 
 ---
 
