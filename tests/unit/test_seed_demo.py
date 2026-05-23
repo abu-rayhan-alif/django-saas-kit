@@ -74,5 +74,16 @@ def test_openapi_schema_includes_demo_login_example(api_client):
 
     token_post = schema["paths"]["/api/v1/auth/token/"]["post"]
     examples = token_post["requestBody"]["content"]["application/json"]["examples"]
-    assert "Demo tenant admin login" in examples
-    assert examples["Demo tenant admin login"]["value"]["username"] == DEMO_ADMIN.username
+    demo_example = next(
+        (
+            ex
+            for ex in examples.values()
+            if ex.get("value", {}).get("username") == DEMO_ADMIN.username
+        ),
+        None,
+    )
+    assert demo_example is not None, (
+        f"Demo login example missing from schema keys: {list(examples.keys())}"
+    )
+    assert demo_example["value"]["password"] == DEMO_ADMIN.password
+    assert "seed_demo" in demo_example.get("description", "").lower()
