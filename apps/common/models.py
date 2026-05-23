@@ -78,7 +78,7 @@ class BaseModel(models.Model):
         self.is_deleted = True
         self.deleted_at = timezone.now()
         if deleted_by is not None:
-            self.deleted_by = deleted_by
+            self.deleted_by_id = deleted_by.pk
         self.save(
             update_fields=["is_deleted", "deleted_at", "deleted_by"],
             using=using,
