@@ -22,7 +22,7 @@ Write a new ADR when a change:
 | Kebab-case slug after the number | `004-why-redis.md` |
 | One decision per file | Split if two unrelated choices |
 | Never reuse numbers | Deprecated ADRs stay in place; mark **Superseded by ADR-00N** |
-| Sequential only | Next free number is `006` (after `005`) |
+| Sequential only | Next free number is `007` (after `006`) |
 
 ## Required format
 
@@ -44,6 +44,7 @@ Optional: **References**, **Status** (`Proposed` | `Accepted` | `Deprecated` | `
 | [003](003-why-jwt.md) | Why JWT | Accepted |
 | [004](004-why-redis.md) | Why Redis | Accepted |
 | [005](005-django-environ-vs-python-decouple.md) | django-environ vs python-decouple | Accepted |
+| [006](006-sentry-vs-prometheus.md) | Sentry first, Prometheus later | Accepted |
 
 ## How to add an ADR
 

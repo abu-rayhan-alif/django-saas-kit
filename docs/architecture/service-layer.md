@@ -107,5 +107,6 @@ Keep mapping in views only; services stay transport-agnostic.
 
 ## Related
 
+- [Event-driven flow](event-driven.md) — Event → Celery → Notification → Email/WebSocket
 - [ADR index](../adr/README.md)
 - API docs: `/api/docs/` (user create: `POST /api/users/`)

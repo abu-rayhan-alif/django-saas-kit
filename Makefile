@@ -1,4 +1,4 @@
-.PHONY: help dev up down build logs shell migrate seed-demo test lint
+.PHONY: help dev up down build logs shell migrate seed-demo beat-schedule redis-check test lint
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,8 @@ help:
 	@echo "  make shell    - Open Django shell in web container"
 	@echo "  make migrate  - Run database migrations"
 	@echo "  make seed-demo - Seed demo tenants and admin user"
+	@echo "  make beat-schedule - Register Celery Beat periodic tasks in DB"
+	@echo "  make redis-check   - Verify Redis via Django cache"
 	@echo "  make test     - Run pytest locally"
 	@echo "  make lint     - Run ruff and mypy"
 
@@ -42,6 +44,12 @@ migrate:
 
 seed-demo:
 	docker compose exec web python manage.py seed_demo
+
+beat-schedule:
+	docker compose exec web python manage.py sync_beat_schedule
+
+redis-check:
+	docker compose exec web python manage.py check_redis
 
 test:
 	pytest -v

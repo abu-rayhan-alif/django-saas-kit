@@ -67,9 +67,18 @@ class UserService:
             user.full_clean()
             user.save()
 
+        user_id = user.pk
+        transaction.on_commit(lambda uid=user_id: _enqueue_welcome_email(uid))
+
         return user
 
     @staticmethod
     def get_display_name(user: AbstractUser) -> str:
         full_name = user.get_full_name().strip()
         return full_name or user.username
+
+
+def _enqueue_welcome_email(user_id: int) -> None:
+    from apps.users.tasks import send_welcome_email
+
+    send_welcome_email.delay(user_id)
