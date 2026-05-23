@@ -7,13 +7,11 @@ must not bleed into tenant B.
 """
 
 import pytest
-from django.contrib.auth.models import User
-
 from apps.rbac.models import RoleChoices, UserTenantRole
 from apps.tenants.models import Tenant
+from django.contrib.auth.models import User
 from services.exceptions import ValidationServiceError
 from services.rbac import RBACService
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

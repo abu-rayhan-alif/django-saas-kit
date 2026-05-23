@@ -19,10 +19,9 @@ import functools
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
-
-from apps.tenants.models import Tenant
 from services.rbac import RBACService
 
+from apps.tenants.models import Tenant
 
 # ---------------------------------------------------------------------------
 # Internal helper

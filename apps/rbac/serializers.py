@@ -26,8 +26,8 @@ class RoleAssignSerializer(serializers.Serializer):
     def validate_user_id(self, value: int):
         try:
             return User.objects.get(pk=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User not found.")
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError("User not found.") from exc
 
 
 class RoleRevokeSerializer(serializers.Serializer):
@@ -36,5 +36,5 @@ class RoleRevokeSerializer(serializers.Serializer):
     def validate_user_id(self, value: int):
         try:
             return User.objects.get(pk=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User not found.")
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError("User not found.") from exc

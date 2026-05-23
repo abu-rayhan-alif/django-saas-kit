@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from django.contrib.auth.models import AbstractBaseUser
-
 from apps.rbac.models import RoleChoices, UserTenantRole
 from apps.tenants.models import Tenant
+from django.contrib.auth.models import AbstractBaseUser
+
 from services.exceptions import ValidationServiceError
 
 

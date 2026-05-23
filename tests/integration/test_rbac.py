@@ -12,10 +12,9 @@ Scenarios verified:
 import json
 
 import pytest
-from django.contrib.auth.models import User
-
 from apps.rbac.models import RoleChoices
 from apps.tenants.models import Tenant
+from django.contrib.auth.models import User
 from services.rbac import RBACService
 
 TOKEN_URL = "/api/v1/auth/token/"

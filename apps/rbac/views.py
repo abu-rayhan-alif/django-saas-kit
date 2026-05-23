@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from services.rbac import RBACService
 
 from apps.rbac.models import UserTenantRole
 from apps.rbac.permissions import HasRolePermission
@@ -13,7 +14,6 @@ from apps.rbac.serializers import (
     UserTenantRoleSerializer,
 )
 from apps.tenants.models import Tenant
-from services.rbac import RBACService
 
 
 class TenantRoleListView(APIView):

@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from services.auth import PasswordResetService
+from services.exceptions import ConflictServiceError, ValidationServiceError
+from services.users import CreateUserInput, UserService
 
 from apps.authentication.serializers import (
     PasswordResetConfirmSerializer,
@@ -12,10 +15,6 @@ from apps.authentication.serializers import (
     RegisterSerializer,
 )
 from apps.users.serializers import UserSerializer
-from services.auth import PasswordResetService
-from services.exceptions import ConflictServiceError, ValidationServiceError
-from services.users import CreateUserInput, UserService
-
 
 # ---------------------------------------------------------------------------
 # Registration
