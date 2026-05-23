@@ -14,6 +14,12 @@ By contributing, you agree that your contributions will be licensed under the
 
 ## Getting started
 
+### Using this repository as a template
+
+End users: see [Start from this template](README.md#start-from-this-template) in the README.
+
+Maintainers enabling the GitHub template: [docs/setup/template-repository.md](docs/setup/template-repository.md).
+
 ### Prerequisites
 
 - Python **3.12+**
@@ -48,6 +54,12 @@ API docs: http://localhost:8000/api/docs/
 Copy `.env.example` to `.env`. **Required** variables (`SECRET_KEY`, `DATABASE_URL`,
 `REDIS_URL`) must be set or Django will fail at startup. See
 [ADR-005](docs/adr/005-django-environ-vs-python-decouple.md) for rationale.
+
+## Versioning and releases
+
+- Version format: **Semantic Versioning** (`MAJOR.MINOR.PATCH`) — see [docs/VERSIONING.md](docs/VERSIONING.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com/))
+- Record user-facing changes under `[Unreleased]`; maintainers cut releases via git tags and GitHub Releases
 
 ## Development workflow
 
@@ -102,6 +114,7 @@ Do **not** open public issues for security vulnerabilities — use
 apps/           # Django apps (auth, tenants, rbac, …)
 config/         # Settings, URLs, Celery
 services/       # Domain service layer
+docs/how-to/    # Extension guides (new app, role, Celery task)
 infra/docker/   # Dockerfile & entrypoint
 tests/          # Pytest suite
 ```
