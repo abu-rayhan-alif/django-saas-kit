@@ -43,6 +43,12 @@ python manage.py runserver
 
 API docs: http://localhost:8000/api/docs/
 
+### Environment variables
+
+Copy `.env.example` to `.env`. **Required** variables (`SECRET_KEY`, `DATABASE_URL`,
+`REDIS_URL`) must be set or Django will fail at startup. See
+[ADR-005](docs/adr/005-django-environ-vs-python-decouple.md) for rationale.
+
 ## Development workflow
 
 1. Fork the repository and create a branch from `main` or `develop`.
