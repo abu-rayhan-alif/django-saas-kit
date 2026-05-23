@@ -1,6 +1,8 @@
 """User use-cases — no HTTP or DRF dependencies."""
 
 from dataclasses import dataclass
+from functools import partial
+from typing import cast
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -67,8 +69,7 @@ class UserService:
             user.full_clean()
             user.save()
 
-        user_id = user.pk
-        transaction.on_commit(lambda uid=user_id: _enqueue_welcome_email(uid))
+        transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
 
         return user
 
