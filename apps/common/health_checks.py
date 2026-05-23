@@ -1,4 +1,4 @@
-"""Readiness checks for /health/ (database + Redis)."""
+"""Dependency checks for ``GET /ready/`` (database + Redis)."""
 
 from __future__ import annotations
 
@@ -20,3 +20,25 @@ def check_redis() -> str:
         return "error"
     cache.delete(probe_key)
     return "ok"
+
+
+def run_readiness_checks() -> tuple[dict[str, str], bool]:
+    """
+    Run database and Redis probes.
+
+    Returns ``(checks, all_ok)`` where each check value is ``ok`` or ``error``.
+    """
+    checks: dict[str, str] = {}
+
+    try:
+        checks["database"] = check_database()
+    except Exception:
+        checks["database"] = "error"
+
+    try:
+        checks["redis"] = check_redis()
+    except Exception:
+        checks["redis"] = "error"
+
+    all_ok = all(value == "ok" for value in checks.values())
+    return checks, all_ok

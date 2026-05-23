@@ -4,6 +4,8 @@ Base Django settings shared across all environments.
 
 from datetime import timedelta
 
+from apps.common.logging_config import get_logging_config
+
 from config.env import (
     BASE_DIR,
     get_bool,
@@ -30,6 +32,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -51,6 +54,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "apps.common.middleware.request_context.RequestContextMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -58,6 +63,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.common.middleware.content_security_policy.ContentSecurityPolicyMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -120,6 +126,15 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "apps.common.throttling.AnonRateThrottle",
+        "apps.common.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": get_str("THROTTLE_ANON_RATE", default="20/minute"),
+        "user": get_str("THROTTLE_USER_RATE", default="100/minute"),
+        "login": get_str("THROTTLE_LOGIN_RATE", default="5/minute"),
+    },
     "EXCEPTION_HANDLER": "apps.common.exceptions.saas_exception_handler",
 }
 
@@ -196,23 +211,21 @@ PASSWORD_RESET_TIMEOUT = get_int("PASSWORD_RESET_TIMEOUT", default=3600)
 # Frontend base URL embedded in password-reset emails.
 FRONTEND_URL = get_str("FRONTEND_URL", default="http://localhost:3000")
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-}
+# ---------------------------------------------------------------------------
+# CORS (SAAS-701) — browser clients calling the API from a separate origin
+# ---------------------------------------------------------------------------
+_cors_origins = get_csv("CORS_ALLOWED_ORIGINS", default="")
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = _cors_origins
+else:
+    CORS_ALLOWED_ORIGINS = [FRONTEND_URL.rstrip("/")]
+
+CORS_ALLOW_CREDENTIALS = get_bool("CORS_ALLOW_CREDENTIALS", default=True)
+CORS_URLS_REGEX = r"^/api/.*$"
+
+# CSP applied in production via ContentSecurityPolicyMiddleware (see prod.py)
+CONTENT_SECURITY_POLICY = ""
+
+# SAAS-601 — structured logging (override STRUCTLOG_JSON per environment)
+STRUCTLOG_JSON = get_bool("STRUCTLOG_JSON", default=False)
+LOGGING = get_logging_config(json_logs=STRUCTLOG_JSON)

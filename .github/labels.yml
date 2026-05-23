@@ -21,6 +21,10 @@
   color: "0075CA"
   description: Documentation only
 
+- name: dependencies
+  color: "0366D6"
+  description: Dependency updates (Dependabot)
+
 # Common workflow labels (kept for issue templates)
 - name: bug
   color: "D73A4A"

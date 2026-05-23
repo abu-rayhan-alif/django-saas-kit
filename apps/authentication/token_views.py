@@ -5,6 +5,8 @@ from examples.openapi_examples import DEMO_LOGIN_REQUEST
 from rest_framework_simplejwt.views import TokenObtainPairView as BaseTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 
+from apps.common.throttling import LoginRateThrottle
+
 
 @extend_schema(
     tags=["Auth"],
@@ -16,7 +18,8 @@ from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshV
     examples=[DEMO_LOGIN_REQUEST],
 )
 class TokenObtainPairView(BaseTokenObtainPairView):
-    pass
+    throttle_classes = [LoginRateThrottle]
+    throttle_scope = "login"
 
 
 @extend_schema(

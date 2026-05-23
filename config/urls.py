@@ -1,6 +1,6 @@
 from apps.common.exceptions import handler404 as _h404
 from apps.common.exceptions import handler500 as _h500
-from apps.common.views import HealthCheckView
+from apps.common.views import HealthCheckView, ReadinessCheckView
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -12,6 +12,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", HealthCheckView.as_view(), name="health-check"),
+    path("ready/", ReadinessCheckView.as_view(), name="readiness-check"),
     # v1 API
     path("api/v1/auth/", include("apps.authentication.urls")),
     path("api/v1/users/", include("apps.users.urls")),

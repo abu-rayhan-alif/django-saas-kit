@@ -24,22 +24,33 @@ And in config/urls.py::
 
 from __future__ import annotations
 
-import logging
 import re
 from typing import Any
 
+import structlog
 from django.http import HttpRequest, JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+
+def _capture_unhandled_exception(exc: Exception) -> None:
+    """Report server errors to Sentry when the SDK is initialized (SAAS-603)."""
+    try:
+        import sentry_sdk
+
+        if sentry_sdk.is_initialized():
+            sentry_sdk.capture_exception(exc)
+    except Exception:
+        pass
 
 
 def _camel_to_snake(name: str) -> str:
@@ -93,6 +104,7 @@ def saas_exception_handler(exc: Exception, context: dict) -> Response | None:
     if response is None:
         # DRF did not handle this — it is an unhandled server error.
         logger.exception("Unhandled exception during request processing", exc_info=exc)
+        _capture_unhandled_exception(exc)
         return Response(
             {
                 "error": "server_error",
