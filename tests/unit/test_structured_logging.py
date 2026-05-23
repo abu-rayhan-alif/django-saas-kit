@@ -38,20 +38,20 @@ def test_request_id_bound_in_logs():
     assert logs[0]["request_id"] == "log-test-id"
 
 
-def test_inject_trace_id_from_request_context():
+def test_inject_trace_id_from_request_context() -> None:
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id="trace-from-http")
-    headers: dict = {}
+    headers: dict[str, str] = {}
     inject_trace_id(headers=headers)
     assert headers[TRACE_ID_HEADER] == "trace-from-http"
 
 
-def test_bind_task_trace_id_from_headers():
+def test_bind_task_trace_id_from_headers() -> None:
     class _Request:
-        headers = {TRACE_ID_HEADER: "celery-trace-123"}
+        headers: dict[str, str] = {TRACE_ID_HEADER: "celery-trace-123"}
 
     class _Task:
-        request = _Request()
+        request: _Request = _Request()
 
     bind_task_trace_id(task_id="1", task=_Task())
     assert structlog.contextvars.get_contextvars()["trace_id"] == "celery-trace-123"
@@ -59,12 +59,12 @@ def test_bind_task_trace_id_from_headers():
     assert structlog.contextvars.get_contextvars() == {}
 
 
-def test_bind_task_trace_id_generated_when_missing():
+def test_bind_task_trace_id_generated_when_missing() -> None:
     class _Request:
-        headers: dict = {}
+        headers: dict[str, str] = {}
 
     class _Task:
-        request = _Request()
+        request: _Request = _Request()
 
     bind_task_trace_id(task_id="1", task=_Task())
     trace_id = structlog.contextvars.get_contextvars()["trace_id"]
@@ -73,7 +73,7 @@ def test_bind_task_trace_id_generated_when_missing():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_celery_task_binds_trace_id_from_headers(monkeypatch, settings):
+def test_celery_task_binds_trace_id_from_headers(monkeypatch, settings) -> None:
     """Worker binds ``trace_id`` from Celery message headers (publish propagation)."""
     from apps.users.tasks import send_welcome_email
     from django.contrib.auth import get_user_model

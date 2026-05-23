@@ -6,16 +6,16 @@ Initializes only when ``SENTRY_DSN`` is set; otherwise returns without error.
 
 from __future__ import annotations
 
-from typing import Any
-
 import structlog
 from config.env import get_str
+from sentry_sdk.types import Event, Hint
 
 
-def _before_send(event: dict[str, Any], _hint: dict[str, Any]) -> dict[str, Any] | None:
+def _before_send(event: Event, _hint: Hint) -> Event | None:
     """Attach structlog correlation IDs to Sentry events."""
     ctx = structlog.contextvars.get_contextvars()
-    tags = event.setdefault("tags", {})
+    event.setdefault("tags", {})
+    tags = event["tags"]
     if request_id := ctx.get("request_id"):
         tags["request_id"] = request_id
     if trace_id := ctx.get("trace_id"):
