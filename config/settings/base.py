@@ -32,6 +32,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "django_celery_beat",
 ]
@@ -141,11 +142,11 @@ SPECTACULAR_SETTINGS = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=get_int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=60)
+        minutes=get_int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=15)
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=get_int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7)),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 REDIS_URL = get_str("REDIS_URL", required=True)
@@ -163,11 +164,26 @@ CACHES = {
     }
 }
 
+# ---------------------------------------------------------------------------
+# Email — dev: console  |  prod: smtp (set EMAIL_BACKEND + SMTP_* env vars)
+# ---------------------------------------------------------------------------
 EMAIL_BACKEND = get_str(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
 )
 DEFAULT_FROM_EMAIL = get_str("DEFAULT_FROM_EMAIL", default="noreply@example.com")
+EMAIL_HOST = get_str("EMAIL_HOST", default="")
+EMAIL_PORT = get_int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = get_str("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = get_str("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = get_bool("EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = get_bool("EMAIL_USE_SSL", default=False)
+
+# Password-reset token lifetime (seconds).  Django default is 3 days; we use 1 h.
+PASSWORD_RESET_TIMEOUT = get_int("PASSWORD_RESET_TIMEOUT", default=3600)
+
+# Frontend base URL embedded in password-reset emails.
+FRONTEND_URL = get_str("FRONTEND_URL", default="http://localhost:3000")
 
 LOGGING = {
     "version": 1,
