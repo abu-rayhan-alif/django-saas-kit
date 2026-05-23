@@ -2,6 +2,10 @@ from typing import cast
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.shortcuts import get_object_or_404
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from examples.demo_config import TENANT1_ID
+from examples.openapi_examples import DEMO_RBAC_TENANT_ID
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -30,6 +34,24 @@ class TenantRoleListView(APIView):
     permission_classes = [IsAuthenticated, HasRolePermission]
     required_roles = ["owner", "admin", "member"]
 
+    @extend_schema(
+        tags=["RBAC"],
+        summary="List role assignments for a tenant",
+        description=(
+            "Requires membership in the tenant. "
+            f"After ``seed_demo``, Tenant One id is ``{TENANT1_ID}``."
+        ),
+        responses={200: UserTenantRoleSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "tenant_id",
+                OpenApiTypes.UUID,
+                OpenApiParameter.PATH,
+                description="Tenant workspace UUID",
+                examples=[DEMO_RBAC_TENANT_ID],
+            ),
+        ],
+    )
     def get(self, request: Request, tenant_id):
         tenant = get_object_or_404(Tenant, id=tenant_id)
         roles = UserTenantRole.objects.filter(tenant=tenant).select_related("user", "tenant")

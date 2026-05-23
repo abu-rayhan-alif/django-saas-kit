@@ -1,0 +1,35 @@
+# GitHub labels for django-saas-kit (SAAS-1002)
+# Synced by .github/workflows/sync-labels.yml
+
+- name: adr
+  color: "0E8A16"
+  description: Architecture Decision Record (docs/adr/)
+
+- name: security
+  color: "D93F0B"
+  description: Security vulnerability or hardening (see SECURITY.md)
+
+- name: testing
+  color: "FBCA04"
+  description: Tests, coverage, or quality assurance
+
+- name: gdpr
+  color: "5319E7"
+  description: Privacy, GDPR, or data-protection impact
+
+- name: docs
+  color: "0075CA"
+  description: Documentation only
+
+# Common workflow labels (kept for issue templates)
+- name: bug
+  color: "D73A4A"
+  description: Something is not working
+
+- name: enhancement
+  color: "A2EEEF"
+  description: New feature or improvement
+
+- name: triage
+  color: "EDEDED"
+  description: Needs maintainer review

@@ -206,8 +206,9 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 Contributions are welcome. Please read:
 
-- **[Contributing guide](CONTRIBUTING.md)**
-- [Code of conduct](CODE_OF_CONDUCT.md)
+- **[Contributing guide](CONTRIBUTING.md)** — ticket flow (Jira → GitHub Issues), labels, PR checklist
+- [Contributor Covenant](CODE_OF_CONDUCT.md)
+- [GitHub Project board](docs/setup/github-project.md) — Backlog / In Progress / In Review / Done
 - [Pull request template](.github/PULL_REQUEST_TEMPLATE.md)
 
 ## Security

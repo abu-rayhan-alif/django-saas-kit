@@ -12,6 +12,8 @@ from services.exceptions import ValidationServiceError
 class RBACService:
     """Stateless service for role assignment and permission checks."""
 
+    # TODO: Add your business logic here
+
     VALID_ROLES: frozenset[str] = frozenset(RoleChoices.values)
 
     # ------------------------------------------------------------------

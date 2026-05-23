@@ -8,6 +8,8 @@ _SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class TenantService:
+    # TODO: Add your business logic here
+
     @staticmethod
     def normalize_slug(slug: str) -> str:
         normalized = slug.strip().lower().replace(" ", "-")

@@ -1,18 +1,19 @@
 name: Feature Request
-description: Suggest a new feature or improvement
+description: Suggest a new feature or improvement (public GitHub Issues)
 title: "[Feature]: "
 labels: ["enhancement", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting an improvement. Clear use cases help us prioritize work.
+        Thanks for the suggestion. Use this form for **public** feature discussion on GitHub.
+
+        For architecture changes, expect an ADR in `docs/adr/` with the PR. Label `adr` applies.
 
   - type: textarea
     id: problem
     attributes:
       label: Problem / motivation
-      description: What problem does this solve? Who benefits?
       placeholder: As a [user type], I want [goal] so that [benefit].
     validations:
       required: true
@@ -21,7 +22,6 @@ body:
     id: solution
     attributes:
       label: Proposed solution
-      description: Describe the feature or change you would like to see.
     validations:
       required: true
 
@@ -29,9 +29,6 @@ body:
     id: alternatives
     attributes:
       label: Alternatives considered
-      description: Any alternative approaches you considered?
-    validations:
-      required: false
 
   - type: dropdown
     id: area
@@ -45,16 +42,26 @@ body:
         - API / DRF
         - Docker / DevOps
         - Documentation
+        - Privacy / GDPR
         - Other
     validations:
       required: true
+
+  - type: checkboxes
+    id: labels_hint
+    attributes:
+      label: Suggested labels
+      options:
+        - label: Architecture (`adr`)
+        - label: Documentation (`docs`)
+        - label: Privacy / GDPR (`gdpr`)
+        - label: Testing (`testing`)
 
   - type: checkboxes
     id: checklist
     attributes:
       label: Checklist
       options:
-        - label: This feature aligns with the project's SaaS starter scope
+        - label: This fits the SaaS starter scope (not app-specific business logic only)
           required: true
         - label: I am willing to contribute a PR (optional)
-          required: false
