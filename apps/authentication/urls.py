@@ -1,10 +1,7 @@
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenBlacklistView,
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import TokenBlacklistView
 
+from apps.authentication.token_views import TokenObtainPairView, TokenRefreshView
 from apps.authentication.views import (
     PasswordResetConfirmView,
     PasswordResetRequestView,

@@ -25,6 +25,8 @@ class CreateUserInput:
 class UserService:
     """User registration and profile use-cases."""
 
+    # TODO: Add your business logic here
+
     @staticmethod
     def create_user(data: CreateUserInput) -> AbstractUser:
         """

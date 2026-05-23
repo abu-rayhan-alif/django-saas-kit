@@ -8,6 +8,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
@@ -17,6 +18,8 @@ User = get_user_model()
 
 
 class PasswordResetService:
+    # TODO: Add your business logic here
+
     """
     Stateless service for self-service password reset.
 
@@ -67,20 +70,16 @@ class PasswordResetService:
         frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
         reset_link = f"{frontend_url}/reset-password/?uid={uid}&token={token}"
 
-        body = (
-            f"Hi {user.get_full_name() or user.username},\n\n"
-            "You requested a password reset for your account.\n\n"
-            f"Reset link (valid for {settings.PASSWORD_RESET_TIMEOUT // 3600} hour(s)):\n"
-            f"{reset_link}\n\n"
-            "Or submit the values below directly to the API:\n"
-            f"  POST /api/v1/auth/password/reset/confirm/\n"
-            f"  {{\n"
-            f'    "uid": "{uid}",\n'
-            f'    "token": "{token}",\n'
-            f'    "new_password": "<your-new-password>"\n'
-            f"  }}\n\n"
-            "If you did not request this, you can safely ignore this email.\n"
-        )
+        hours_valid = settings.PASSWORD_RESET_TIMEOUT // 3600
+        context = {
+            "user_name": user.get_full_name() or user.username,
+            "reset_link": reset_link,
+            "uid": uid,
+            "token": token,
+            "hours_valid": hours_valid,
+        }
+        body = render_to_string("emails/password_reset.txt", context)
+        html_body = render_to_string("emails/password_reset.html", context)
 
         send_mail(
             subject="Password Reset Request",
@@ -88,6 +87,7 @@ class PasswordResetService:
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=False,
+            html_message=html_body,
         )
 
     @staticmethod

@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- What does this PR do? Link related issues: Fixes #123 -->
+<!-- What does this PR do? Link issues: Fixes #123, Relates to SAAS-XXXX -->
 
 ## Type of change
 
@@ -12,24 +12,24 @@
 
 ## How to test
 
-<!-- Steps for reviewers, or commands you ran locally -->
+<!-- Commands you ran, or steps for reviewers -->
 
 ```bash
-# Example
 make lint
 make test
-docker compose up -d --build
+# optional: make dev
 ```
 
-## Checklist
+## PR checklist
 
-- [ ] My code follows the project style (ruff, mypy)
-- [ ] I added/updated tests where appropriate
-- [ ] I updated documentation (README, ADR, or inline docs) if needed
-- [ ] `CHANGELOG` / release notes updated (if applicable)
-- [ ] No secrets or credentials committed (`.env` stays gitignored)
-- [ ] CI passes locally or I expect it to pass after review
+- [ ] **Tests passed** — `make test` (or `pytest`) green locally / CI
+- [ ] **Linted** — `make lint` (ruff + mypy) passes
+- [ ] **ADR updated** (if arch change) — new or updated file under `docs/adr/`
+- [ ] **Docs updated** — README, how-to, or `CUSTOMIZATION.md` as needed
+- [ ] **Breaking change noted** — `CHANGELOG.md` + migration/API notes (or N/A)
+- [ ] No secrets committed (`.env` stays gitignored)
+- [ ] Appropriate labels applied (`adr`, `security`, `testing`, `gdpr`, `docs`, etc.)
 
 ## Screenshots / API notes
 
-<!-- Optional: Swagger changes, UI screenshots, migration notes -->
+<!-- Optional: Swagger changes, OpenAPI diff, migration commands -->

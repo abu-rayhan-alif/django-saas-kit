@@ -1,5 +1,10 @@
 # Contributor Covenant Code of Conduct
 
+## Contributor Covenant
+
+This project follows the **[Contributor Covenant](https://www.contributor-covenant.org/)**
+(**version 2.1**). The full text is below.
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our

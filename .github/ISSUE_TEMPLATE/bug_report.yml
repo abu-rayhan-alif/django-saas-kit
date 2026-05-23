@@ -1,19 +1,22 @@
 name: Bug Report
-description: Report a bug or unexpected behavior
+description: Report a bug or unexpected behavior (public GitHub Issues)
 title: "[Bug]: "
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a bug. Please fill in as much detail as you can.
+        Thanks for reporting a bug. **Do not** file security vulnerabilities here —
+        use [SECURITY.md](https://github.com/abu-rayhan-alif/django-saas-kit/blob/main/SECURITY.md) instead.
+
+        Maintainers track public work on GitHub Issues; private planning may start in personal Jira first.
 
   - type: textarea
     id: description
     attributes:
       label: What happened?
-      description: A clear description of the bug.
-      placeholder: Describe what you expected vs. what actually happened.
+      description: What you expected vs. what actually happened.
+      placeholder: Describe the bug clearly.
     validations:
       required: true
 
@@ -21,10 +24,9 @@ body:
     id: steps
     attributes:
       label: Steps to reproduce
-      description: Minimal steps to reproduce the behavior.
       placeholder: |
-        1. Go to '...'
-        2. Run '...'
+        1. Run `make dev`
+        2. Call `POST /api/v1/...`
         3. See error
     validations:
       required: true
@@ -41,7 +43,7 @@ body:
     attributes:
       label: How are you running the project?
       options:
-        - Docker Compose (local)
+        - Docker Compose (`make dev`)
         - Docker Compose (production)
         - Local Python (venv)
         - GitHub Actions CI
@@ -54,15 +56,21 @@ body:
     attributes:
       label: Python version
       placeholder: e.g. 3.12.4
-    validations:
-      required: false
 
   - type: textarea
     id: logs
     attributes:
       label: Relevant logs / traceback
-      description: Paste error output or stack traces inside a code block.
       render: shell
+
+  - type: checkboxes
+    id: labels_hint
+    attributes:
+      label: Applicable areas (maintainers may add labels)
+      options:
+        - label: Tests / CI (`testing`)
+        - label: Documentation (`docs`)
+        - label: Privacy / data (`gdpr`)
 
   - type: checkboxes
     id: checklist
@@ -72,4 +80,3 @@ body:
         - label: I searched existing issues before opening this one
           required: true
         - label: I am willing to open a PR to fix this (optional)
-          required: false

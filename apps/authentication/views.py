@@ -1,6 +1,7 @@
 """Authentication HTTP views — thin adapters over service layer."""
 
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from examples.demo_config import DEMO_ADMIN
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -40,6 +41,29 @@ class RegisterView(APIView):
             409: OpenApiResponse(description="Username or email already taken"),
         },
         summary="Register a new user account",
+        examples=[
+            OpenApiExample(
+                "Register (non-demo)",
+                value={
+                    "email": "newuser@example.com",
+                    "username": "newuser",
+                    "password": "SecurePass123!",
+                    "first_name": "New",
+                    "last_name": "User",
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Demo admin already exists",
+                description="Use login instead — created by ``seed_demo``.",
+                value={
+                    "email": DEMO_ADMIN.email,
+                    "username": DEMO_ADMIN.username,
+                    "password": DEMO_ADMIN.password,
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)

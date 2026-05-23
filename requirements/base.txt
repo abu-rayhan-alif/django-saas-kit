@@ -9,5 +9,6 @@ celery>=5.4,<6
 django-celery-beat>=2.6,<3
 djangorestframework-simplejwt>=5.3,<6
 drf-spectacular>=0.27,<1
+django-filter>=24.0,<25
 gunicorn>=22.0,<24
 whitenoise>=6.7,<7

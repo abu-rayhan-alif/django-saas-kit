@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 
 
+# TODO: Add your app-specific roles
 class RoleChoices(models.TextChoices):
     OWNER = "owner", "Owner"
     ADMIN = "admin", "Admin"
