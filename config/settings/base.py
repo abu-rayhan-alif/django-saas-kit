@@ -3,24 +3,22 @@ Base Django settings shared across all environments.
 """
 
 from datetime import timedelta
-from pathlib import Path
 
-import environ
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-env = environ.Env(
-    DEBUG=(bool, False),
-    ALLOWED_HOSTS=(list, []),
-    JWT_ACCESS_TOKEN_LIFETIME_MINUTES=(int, 60),
-    JWT_REFRESH_TOKEN_LIFETIME_DAYS=(int, 7),
+from config.env import (
+    BASE_DIR,
+    get_bool,
+    get_csv,
+    get_database_url_config,
+    get_int,
+    get_str,
+    validate_required_settings,
 )
 
-environ.Env.read_env(BASE_DIR / ".env")
+validate_required_settings()
 
-SECRET_KEY = env("SECRET_KEY")
-DEBUG = env.bool("DEBUG")
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+SECRET_KEY = get_str("SECRET_KEY", required=True)
+DEBUG = get_bool("DEBUG", default=False)
+ALLOWED_HOSTS = get_csv("ALLOWED_HOSTS", default="")
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -67,7 +65,7 @@ ASGI_APPLICATION = "config.asgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -80,11 +78,7 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    "default": env.db(
-        "DATABASE_URL", default="postgres://saas_user:saas_pass@localhost:5432/saas_db"
-    ),
-}
+DATABASES = {"default": get_database_url_config()}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -146,15 +140,15 @@ SPECTACULAR_SETTINGS = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES")),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_TOKEN_LIFETIME_DAYS")),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=get_int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=60)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=get_int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7)),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": False,
 }
 
-REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL)
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=REDIS_URL)
+REDIS_URL = get_str("REDIS_URL", required=True)
+CELERY_BROKER_URL = get_str("CELERY_BROKER_URL", default=REDIS_URL)
+CELERY_RESULT_BACKEND = get_str("CELERY_RESULT_BACKEND", default=REDIS_URL)
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -167,8 +161,11 @@ CACHES = {
     }
 }
 
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
+EMAIL_BACKEND = get_str(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = get_str("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 
 LOGGING = {
     "version": 1,

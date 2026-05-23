@@ -68,6 +68,19 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on push/PR to `main` and `devel
 | `make test` | Run pytest |
 | `make lint` | Run linters |
 
+## Architecture
+
+Business logic lives in the **`services/`** layer; views only handle HTTP.
+See [Service layer guide](docs/architecture/service-layer.md).
+
+## Configuration
+
+Settings are split by environment (`local`, `staging`, `prod`). Environment variables
+are loaded with **[python-decouple](https://pypi.org/project/python-decouple/)**
+via `config/env.py`. Copy `.env.example` to `.env` before running the app.
+
+See [ADR-005](docs/adr/005-django-environ-vs-python-decouple.md) for the decision record.
+
 ## Contributing
 
 We welcome contributions. Please read:
