@@ -23,7 +23,7 @@ def test_beat_schedule_includes_token_cleanup():
     assert entry["task"] == "apps.authentication.tasks.cleanup_expired_tokens"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_send_welcome_email_task():
     user = User.objects.create_user(
         username="welcome",
@@ -40,8 +40,9 @@ def test_send_welcome_email_task():
     assert "Welcome" in mail.outbox[0].subject
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_create_user_enqueues_welcome_email():
+    """transaction=True commits so transaction.on_commit runs the Celery task (eager)."""
     user = UserService.create_user(
         CreateUserInput(
             email="new@example.com",

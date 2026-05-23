@@ -32,7 +32,8 @@ def test_retry_policy_constants():
 def test_send_welcome_email_retries_on_failure_then_succeeds(mocker, settings):
     """Task autoretries on transient errors (max 3 retries)."""
     settings.CELERY_TASK_ALWAYS_EAGER = True
-    settings.CELERY_TASK_EAGER_PROPAGATES = True
+    # False so apply() runs eager retries inline instead of raising celery.exceptions.Retry
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
 
     user = User.objects.create_user(
         username="retry_user",
@@ -40,12 +41,13 @@ def test_send_welcome_email_retries_on_failure_then_succeeds(mocker, settings):
         password="SecurePass123!",
     )
     attempts = {"count": 0}
+    real_send = WelcomeEmailService.send_to_user
 
     def flaky_send(user_id: int) -> str:
         attempts["count"] += 1
         if attempts["count"] < 3:
             raise ConnectionError("SMTP temporarily unavailable")
-        return WelcomeEmailService.send_to_user(user_id)
+        return real_send(user_id)
 
     mocker.patch(
         "services.common.idempotency.IdempotencyService.run",
@@ -56,7 +58,7 @@ def test_send_welcome_email_retries_on_failure_then_succeeds(mocker, settings):
         side_effect=flaky_send,
     )
 
-    result = send_welcome_email.apply(args=[user.pk])
+    result = send_welcome_email.apply(args=(user.pk,))
 
     assert result.successful()
     assert attempts["count"] == 3
@@ -66,7 +68,7 @@ def test_send_welcome_email_retries_on_failure_then_succeeds(mocker, settings):
 @pytest.mark.django_db
 def test_send_welcome_email_exhausts_retries_and_fails(mocker, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
-    settings.CELERY_TASK_EAGER_PROPAGATES = True
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
 
     user = User.objects.create_user(
         username="fail_user",
@@ -83,8 +85,10 @@ def test_send_welcome_email_exhausts_retries_and_fails(mocker, settings):
         side_effect=ConnectionError("permanent outage"),
     )
 
-    with pytest.raises(ConnectionError, match="permanent outage"):
-        send_welcome_email.apply(args=[user.pk])
+    result = send_welcome_email.apply(args=(user.pk,))
+    assert not result.successful()
+    assert isinstance(result.result, ConnectionError)
+    assert str(result.result) == "permanent outage"
 
 
 @pytest.mark.django_db
@@ -107,11 +111,15 @@ def test_idempotency_skips_duplicate_side_effect(mocker):
     send_mock.assert_called_once()
 
 
-@pytest.mark.django_db
-def test_send_welcome_email_task_is_idempotent_on_retry_path(mocker, settings):
+@pytest.mark.django_db(transaction=True)
+def test_send_welcome_email_task_is_idempotent_on_retry_path(settings):
     """After a successful run, cache prevents duplicate email on re-delivery."""
     settings.CELERY_TASK_ALWAYS_EAGER = True
     settings.CELERY_TASK_EAGER_PROPAGATES = True
+    settings.CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+    }
+    cache.clear()
 
     user = User.objects.create_user(
         username="cached_user",
