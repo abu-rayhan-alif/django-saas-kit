@@ -1,3 +1,6 @@
+from typing import cast
+
+from django.contrib.auth.models import AbstractBaseUser
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -57,7 +60,9 @@ class AssignRoleView(APIView):
         user = serializer.validated_data["user_id"]  # validate_user_id returns the User
         role = serializer.validated_data["role"]
 
-        user_role = RBACService.assign_role(user, tenant, role, assigned_by=request.user)
+        user_role = RBACService.assign_role(
+            user, tenant, role, assigned_by=cast(AbstractBaseUser, request.user)
+        )
         return Response(
             UserTenantRoleSerializer(user_role).data,
             status=status.HTTP_201_CREATED,

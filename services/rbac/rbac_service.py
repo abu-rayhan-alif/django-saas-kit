@@ -39,9 +39,9 @@ class RBACService:
                 + ", ".join(sorted(RBACService.VALID_ROLES))
             )
         obj, _ = UserTenantRole.objects.update_or_create(
-            user=user,
+            user_id=user.pk,
             tenant=tenant,
-            defaults={"role": role, "assigned_by": assigned_by},
+            defaults={"role": role, "assigned_by_id": assigned_by.pk if assigned_by else None},
         )
         return obj
 
@@ -52,7 +52,7 @@ class RBACService:
 
         Returns ``True`` if a role was deleted, ``False`` if none existed.
         """
-        deleted, _ = UserTenantRole.objects.filter(user=user, tenant=tenant).delete()
+        deleted, _ = UserTenantRole.objects.filter(user_id=user.pk, tenant=tenant).delete()
         return bool(deleted)
 
     # ------------------------------------------------------------------
@@ -63,7 +63,7 @@ class RBACService:
     def get_role(user: AbstractBaseUser, tenant: Tenant) -> str | None:
         """Return the user's role string in *tenant*, or ``None``."""
         try:
-            return UserTenantRole.objects.get(user=user, tenant=tenant).role
+            return UserTenantRole.objects.get(user_id=user.pk, tenant=tenant).role
         except UserTenantRole.DoesNotExist:
             return None
 
@@ -82,4 +82,6 @@ class RBACService:
         """
         if not user or not getattr(user, "is_authenticated", False):
             return False
-        return UserTenantRole.objects.filter(user=user, tenant=tenant, role__in=roles).exists()
+        return UserTenantRole.objects.filter(
+            user_id=user.pk, tenant=tenant, role__in=roles
+        ).exists()

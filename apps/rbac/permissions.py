@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import functools
 
+from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
@@ -109,4 +110,6 @@ class HasRolePermission(BasePermission):
         if tenant is None:
             return False
 
+        if not isinstance(request.user, AbstractBaseUser):
+            return False
         return RBACService.has_role(request.user, tenant, required_roles)
