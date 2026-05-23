@@ -13,18 +13,12 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        help_text="Email address associated with the account."
-    )
+    email = serializers.EmailField(help_text="Email address associated with the account.")
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    uid = serializers.CharField(
-        help_text="Base64-encoded user ID from the reset email."
-    )
-    token = serializers.CharField(
-        help_text="Password-reset token from the reset email."
-    )
+    uid = serializers.CharField(help_text="Base64-encoded user ID from the reset email.")
+    token = serializers.CharField(help_text="Password-reset token from the reset email.")
     new_password = serializers.CharField(
         write_only=True,
         min_length=8,

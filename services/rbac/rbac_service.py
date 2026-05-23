@@ -82,6 +82,4 @@ class RBACService:
         """
         if not user or not getattr(user, "is_authenticated", False):
             return False
-        return UserTenantRole.objects.filter(
-            user=user, tenant=tenant, role__in=roles
-        ).exists()
+        return UserTenantRole.objects.filter(user=user, tenant=tenant, role__in=roles).exists()

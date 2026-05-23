@@ -172,9 +172,7 @@ class TestInsufficientRoleReturns403:
 
 @pytest.mark.django_db
 class TestAuthorisedActions:
-    def test_admin_can_assign_member_role(
-        self, api_client, seeded_tenant, admin_user, plain_user
-    ):
+    def test_admin_can_assign_member_role(self, api_client, seeded_tenant, admin_user, plain_user):
         token = login(api_client, "admin_user")
         resp = post_json(
             api_client,
@@ -185,9 +183,7 @@ class TestAuthorisedActions:
         assert resp.status_code == 201, resp.json()
         assert resp.json()["role"] == "member"
 
-    def test_owner_can_assign_admin_role(
-        self, api_client, seeded_tenant, owner_user, plain_user
-    ):
+    def test_owner_can_assign_admin_role(self, api_client, seeded_tenant, owner_user, plain_user):
         token = login(api_client, "owner")
         resp = post_json(
             api_client,
@@ -198,9 +194,7 @@ class TestAuthorisedActions:
         assert resp.status_code == 201, resp.json()
         assert resp.json()["role"] == "admin"
 
-    def test_owner_can_revoke_role(
-        self, api_client, seeded_tenant, owner_user, member_user
-    ):
+    def test_owner_can_revoke_role(self, api_client, seeded_tenant, owner_user, member_user):
         token = login(api_client, "owner")
         resp = post_json(
             api_client,
@@ -244,6 +238,4 @@ class TestTenantIsolation:
             {"user_id": plain_user.pk, "role": "member"},
             token=token,
         )
-        assert resp.status_code == 403, (
-            "A role in tenant A must not grant access in tenant B"
-        )
+        assert resp.status_code == 403, "A role in tenant A must not grant access in tenant B"

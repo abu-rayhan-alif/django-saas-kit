@@ -46,9 +46,7 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            user = UserService.create_user(
-                CreateUserInput(**serializer.validated_data)
-            )
+            user = UserService.create_user(CreateUserInput(**serializer.validated_data))
         except ValidationServiceError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         except ConflictServiceError as exc:
@@ -87,9 +85,7 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        PasswordResetService.request_reset(
-            email=serializer.validated_data["email"]
-        )
+        PasswordResetService.request_reset(email=serializer.validated_data["email"])
 
         return Response(
             {"detail": "If that email is registered, a reset link has been sent."},

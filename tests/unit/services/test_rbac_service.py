@@ -63,9 +63,7 @@ class TestAssignRole:
             RBACService.assign_role(user, tenant_a, "superuser")
 
     def test_assign_records_assigned_by(self, user, other_user, tenant_a):
-        role = RBACService.assign_role(
-            user, tenant_a, RoleChoices.MEMBER, assigned_by=other_user
-        )
+        role = RBACService.assign_role(user, tenant_a, RoleChoices.MEMBER, assigned_by=other_user)
         assert role.assigned_by == other_user
 
 
@@ -113,12 +111,7 @@ class TestHasRole:
 
     def test_returns_true_when_role_in_list(self, user, tenant_a):
         RBACService.assign_role(user, tenant_a, RoleChoices.OWNER)
-        assert (
-            RBACService.has_role(
-                user, tenant_a, [RoleChoices.ADMIN, RoleChoices.OWNER]
-            )
-            is True
-        )
+        assert RBACService.has_role(user, tenant_a, [RoleChoices.ADMIN, RoleChoices.OWNER]) is True
 
     def test_returns_false_for_wrong_role(self, user, tenant_a):
         RBACService.assign_role(user, tenant_a, RoleChoices.MEMBER)
@@ -132,14 +125,13 @@ class TestHasRole:
 
     def test_returns_false_for_unauthenticated_user(self, tenant_a):
         from unittest.mock import Mock
+
         anon = Mock(is_authenticated=False)
         assert RBACService.has_role(anon, tenant_a, [RoleChoices.MEMBER]) is False
 
     # ---- Tenant isolation (the critical invariant) ----
 
-    def test_role_in_tenant_a_does_not_apply_to_tenant_b(
-        self, user, tenant_a, tenant_b
-    ):
+    def test_role_in_tenant_a_does_not_apply_to_tenant_b(self, user, tenant_a, tenant_b):
         """A role granted in tenant A must NOT grant access in tenant B."""
         RBACService.assign_role(user, tenant_a, RoleChoices.OWNER)
 

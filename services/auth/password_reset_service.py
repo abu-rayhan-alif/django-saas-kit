@@ -75,9 +75,9 @@ class PasswordResetService:
             "Or submit the values below directly to the API:\n"
             f"  POST /api/v1/auth/password/reset/confirm/\n"
             f"  {{\n"
-            f"    \"uid\": \"{uid}\",\n"
-            f"    \"token\": \"{token}\",\n"
-            f"    \"new_password\": \"<your-new-password>\"\n"
+            f'    "uid": "{uid}",\n'
+            f'    "token": "{token}",\n'
+            f'    "new_password": "<your-new-password>"\n'
             f"  }}\n\n"
             "If you did not request this, you can safely ignore this email.\n"
         )
