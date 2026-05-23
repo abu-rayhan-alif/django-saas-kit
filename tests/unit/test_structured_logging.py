@@ -12,8 +12,8 @@ from apps.common.celery_logging import (
     clear_task_trace_id,
     inject_trace_id,
 )
-from apps.common.middleware.request_context import REQUEST_ID_HEADER
 from apps.common.logging_config import shared_processors
+from apps.common.middleware.request_context import REQUEST_ID_HEADER
 from structlog.testing import capture_logs
 
 
@@ -75,9 +75,8 @@ def test_bind_task_trace_id_generated_when_missing():
 @pytest.mark.django_db(transaction=True)
 def test_celery_task_binds_trace_id_from_headers(monkeypatch, settings):
     """Worker binds ``trace_id`` from Celery message headers (publish propagation)."""
-    from django.contrib.auth import get_user_model
-
     from apps.users.tasks import send_welcome_email
+    from django.contrib.auth import get_user_model
     from services.users import welcome_email_service
 
     captured: dict[str, str | None] = {}

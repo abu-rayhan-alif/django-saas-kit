@@ -1,9 +1,9 @@
 """Production settings — hardened defaults."""
 
+from apps.common.logging_config import get_logging_config
 from django.core.exceptions import ImproperlyConfigured
 
-from apps.common.logging_config import get_logging_config
-from config.env import get_bool, get_csv, get_str
+from config.env import get_csv, get_str
 from config.settings.security import DEFAULT_CONTENT_SECURITY_POLICY, HSTS_SECONDS
 
 from .base import *  # noqa: F403

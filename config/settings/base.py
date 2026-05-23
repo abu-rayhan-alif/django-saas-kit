@@ -5,6 +5,7 @@ Base Django settings shared across all environments.
 from datetime import timedelta
 
 from apps.common.logging_config import get_logging_config
+
 from config.env import (
     BASE_DIR,
     get_bool,

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from apps.common.exceptions import saas_exception_handler
 from apps.common.sentry import init_sentry
 

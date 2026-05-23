@@ -30,9 +30,7 @@ def shared_processors() -> list[structlog.types.Processor]:
 def configure_structlog(*, json_logs: bool) -> None:
     """Configure structlog; call once from ``CommonConfig.ready()``."""
     renderer: structlog.types.Processor = (
-        structlog.processors.JSONRenderer()
-        if json_logs
-        else structlog.dev.ConsoleRenderer()
+        structlog.processors.JSONRenderer() if json_logs else structlog.dev.ConsoleRenderer()
     )
     processors = shared_processors() + [
         structlog.processors.format_exc_info,
@@ -50,9 +48,7 @@ def configure_structlog(*, json_logs: bool) -> None:
 def get_logging_config(*, json_logs: bool) -> dict[str, Any]:
     """Django ``LOGGING`` dict using structlog ``ProcessorFormatter``."""
     renderer: structlog.types.Processor = (
-        structlog.processors.JSONRenderer()
-        if json_logs
-        else structlog.dev.ConsoleRenderer()
+        structlog.processors.JSONRenderer() if json_logs else structlog.dev.ConsoleRenderer()
     )
     formatter_name = "json" if json_logs else "console"
     return {

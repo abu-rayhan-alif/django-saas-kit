@@ -6,6 +6,8 @@ import copy
 import json
 
 import pytest
+from apps.common.exceptions import saas_exception_handler
+from apps.common.throttling import LoginRateThrottle
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
@@ -14,9 +16,6 @@ from rest_framework import status
 from rest_framework.exceptions import Throttled
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
-
-from apps.common.exceptions import saas_exception_handler
-from apps.common.throttling import LoginRateThrottle
 
 TOKEN_URL = "/api/v1/auth/token/"
 USER_LIST_URL = "/api/v1/users/list/"

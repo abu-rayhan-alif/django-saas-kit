@@ -1,6 +1,7 @@
 """Local development settings."""
 
 from apps.common.logging_config import get_logging_config
+
 from config.env import get_csv
 
 from .base import *  # noqa: F403

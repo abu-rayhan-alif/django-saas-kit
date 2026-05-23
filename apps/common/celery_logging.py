@@ -11,6 +11,7 @@ from __future__ import annotations
 import uuid
 
 import structlog
+
 from celery import signals
 
 TRACE_ID_HEADER = "trace_id"

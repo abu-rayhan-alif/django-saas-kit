@@ -5,8 +5,6 @@ from __future__ import annotations
 import importlib
 import sys
 
-import pytest
-
 
 def test_cors_preflight_allows_configured_origin(api_client, settings):
     settings.CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]

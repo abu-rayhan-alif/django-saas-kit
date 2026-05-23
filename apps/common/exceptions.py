@@ -28,7 +28,6 @@ import re
 from typing import Any
 
 import structlog
-
 from django.http import HttpRequest, JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
