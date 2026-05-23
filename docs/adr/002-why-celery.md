@@ -2,7 +2,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-05-23  
-**Story:** SAAS-1003
+**Story:** SAAS-501 / SAAS-1003
 
 ---
 
@@ -28,8 +28,21 @@ Use **Celery 5** with **Redis** as the message broker and result backend, plus *
 | App | `config/celery.py` — `app.autodiscover_tasks()` |
 | Broker | `CELERY_BROKER_URL` (default Redis DB `1`) |
 | Results | `CELERY_RESULT_BACKEND` (default Redis DB `2`) |
-| Beat | `celery-beat` service, `DatabaseScheduler` |
+| Beat | `celery-beat` service + `config/celery.py` `beat_schedule` |
 | Workers | `celery -A config worker` in `docker-compose.yml` |
+
+**Example tasks (SAAS-501):**
+
+| Task | Module | Trigger |
+|------|--------|---------|
+| `send_welcome_email` | `apps/users/tasks.py` | `UserService.create_user` → `.delay(user_id)` |
+| `cleanup_expired_tokens` | `apps/authentication/tasks.py` | Beat daily 03:00 UTC |
+
+Register DB-backed beat entries after migrate:
+
+```bash
+python manage.py sync_beat_schedule
+```
 
 Business logic invoked from tasks lives in **`services/`**; `tasks.py` files stay thin wrappers.
 

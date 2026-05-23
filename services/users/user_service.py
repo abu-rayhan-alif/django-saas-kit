@@ -1,6 +1,8 @@
 """User use-cases — no HTTP or DRF dependencies."""
 
 from dataclasses import dataclass
+from functools import partial
+from typing import cast
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -67,9 +69,17 @@ class UserService:
             user.full_clean()
             user.save()
 
+        transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
+
         return user
 
     @staticmethod
     def get_display_name(user: AbstractUser) -> str:
         full_name = user.get_full_name().strip()
         return full_name or user.username
+
+
+def _enqueue_welcome_email(user_id: int) -> None:
+    from apps.users.tasks import send_welcome_email
+
+    send_welcome_email.delay(user_id)

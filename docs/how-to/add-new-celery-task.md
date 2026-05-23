@@ -1,6 +1,10 @@
 # How to add a new Celery task
 
-**Story:** SAAS-B03 | **Layer:** L1
+**Story:** SAAS-501 / SAAS-B03 | **Layer:** L1
+
+**Built-in examples:** `send_welcome_email` (`apps/users/tasks.py`), `cleanup_expired_tokens` (`apps/authentication/tasks.py`, daily beat).
+
+**Retry & idempotency:** see [Background jobs](../background-jobs.md) (SAAS-502).
 
 Background work runs through **Celery**. The worker is already defined in `docker-compose.yml`
 (`celery` and `celery-beat` services). Tasks are auto-discovered from `tasks.py` in each
@@ -79,14 +83,17 @@ class InvoiceReminderView(APIView):
 
 `.delay()` enqueues the job; the HTTP response returns immediately.
 
-## 3. Run the worker
+## 3. Run the worker and beat
 
 **Docker (recommended):**
 
 ```bash
 docker compose up -d celery celery-beat
 docker compose logs -f celery
+docker compose logs -f celery-beat
 ```
+
+Beat registers the daily `cleanup_expired_tokens` schedule via `python manage.py sync_beat_schedule` on startup (see `config/celery.py`).
 
 **Local shell:**
 

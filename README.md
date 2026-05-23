@@ -30,7 +30,7 @@ Migrations run automatically via the container entrypoint.
 
 | Check | URL |
 |-------|-----|
-| Health | http://localhost:8000/health/ |
+| Health | http://localhost:8000/health/ (database + **Redis**) |
 | **API docs (Swagger)** | **http://localhost:8000/api/docs/** |
 | ReDoc | http://localhost:8000/api/redoc/ |
 | OpenAPI schema | http://localhost:8000/api/schema/ |
@@ -80,7 +80,7 @@ flowchart LR
 | **Models** | Schema, constraints, soft delete (`apps/common`) |
 | **RBAC** | Tenant-scoped roles (`owner`, `admin`, `member`) |
 
-Details: [Service layer guide](docs/architecture/service-layer.md) · [CUSTOMIZATION.md](CUSTOMIZATION.md)
+Details: [Service layer guide](docs/architecture/service-layer.md) · [CUSTOMIZATION.md](CUSTOMIZATION.md) · [Observability](docs/observability.md) (`planned`: Sentry → Prometheus)
 
 ## Environment variables
 
@@ -186,6 +186,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 | `make up` / `make down` | Start / stop stack |
 | `make migrate` | Run migrations in web container |
 | `make seed-demo` | Load demo tenants and admin user |
+| `make redis-check` | Verify Redis (`REDIS_URL`) |
 | `make test` | Run pytest |
 | `make lint` | ruff + mypy |
 
@@ -196,6 +197,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 | [Add a new app](docs/how-to/add-new-app.md) | New Django app + service module |
 | [Add a new RBAC role](docs/how-to/add-new-role.md) | Tenant roles |
 | [Add a Celery task](docs/how-to/add-new-celery-task.md) | Background jobs |
+| [Background jobs](docs/background-jobs.md) | Retry, idempotency, DLQ |
 | [CUSTOMIZATION.md](CUSTOMIZATION.md) | All `TODO` extension points |
 
 ## Versioning
@@ -213,7 +215,7 @@ Contributions are welcome. Please read:
 
 ## Security
 
-Report vulnerabilities privately — see **[SECURITY.md](SECURITY.md)**.
+Threat model (credentials, tokens, RBAC, replay) and responsible disclosure: **[SECURITY.md](SECURITY.md)**.
 
 ## License
 

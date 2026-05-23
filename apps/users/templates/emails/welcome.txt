@@ -1,0 +1,9 @@
+{# TODO: Customize email template #}
+Hi {{ user_name }},
+
+Welcome! Your account ({{ email }}) is ready.
+
+You can sign in via the API and explore the docs at /api/docs/.
+
+Thanks,
+Django SaaS Kit
