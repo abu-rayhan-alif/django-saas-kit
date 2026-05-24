@@ -60,16 +60,12 @@ def login(client, username, password="Pass1234!"):
 
 @pytest.fixture
 def tenant(db):
-    return Tenant.objects.create(
-        name="Test Corp", slug="test-corp", schema_name="test-corp"
-    )
+    return Tenant.objects.create(name="Test Corp", slug="test-corp", schema_name="test-corp")
 
 
 @pytest.fixture
 def other_tenant(db):
-    return Tenant.objects.create(
-        name="Other Corp", slug="other-corp", schema_name="other-corp"
-    )
+    return Tenant.objects.create(name="Other Corp", slug="other-corp", schema_name="other-corp")
 
 
 @pytest.fixture

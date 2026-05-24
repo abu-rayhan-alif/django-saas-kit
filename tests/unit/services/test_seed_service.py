@@ -28,6 +28,4 @@ def test_seed_is_idempotent():
     DemoSeedService.seed()
 
     assert Tenant.objects.filter(pk__in=[TENANT1_ID, TENANT2_ID]).count() == 2
-    assert Domain.objects.filter(
-        domain__in=["tenant1.localhost", "tenant2.localhost"]
-    ).count() == 2
+    assert Domain.objects.filter(domain__in=["tenant1.localhost", "tenant2.localhost"]).count() == 2
