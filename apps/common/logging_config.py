@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import logging.config
+from collections.abc import MutableMapping
 from typing import Any
 
 import structlog
@@ -43,7 +44,9 @@ SENSITIVE_FIELDS: frozenset[str] = frozenset(
 _REDACTED = "[REDACTED]"
 
 
-def redact_sensitive_fields(logger: object, method: str, event_dict: dict) -> dict:  # noqa: ARG001
+def redact_sensitive_fields(  # noqa: ARG001
+    logger: Any, method: str, event_dict: MutableMapping[str, Any]
+) -> MutableMapping[str, Any]:
     """Drop sensitive values from the log event dict before rendering."""
     for field in SENSITIVE_FIELDS:
         if field in event_dict:
@@ -51,7 +54,9 @@ def redact_sensitive_fields(logger: object, method: str, event_dict: dict) -> di
     return event_dict
 
 
-def _safe_add_logger_name(logger: object, method: str, event_dict: dict) -> dict:
+def _safe_add_logger_name(
+    logger: Any, method: str, event_dict: MutableMapping[str, Any]
+) -> MutableMapping[str, Any]:
     """Like structlog.stdlib.add_logger_name but safe for non-stdlib loggers.
 
     structlog.stdlib.add_logger_name assumes the underlying logger is a stdlib

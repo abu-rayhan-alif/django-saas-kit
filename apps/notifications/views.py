@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import cast
+
+from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -37,10 +40,11 @@ class NotificationListView(APIView):
     def get(self, request: Request) -> Response:
         unread_only = request.query_params.get("unread_only", "").lower() == "true"
 
+        user = cast(User, request.user)
         if unread_only:
-            qs = NotificationService.list_unread(request.user)
+            qs = NotificationService.list_unread(user)
         else:
-            qs = NotificationService.list_all(request.user)
+            qs = NotificationService.list_all(user)
 
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)
@@ -65,7 +69,7 @@ class MarkNotificationReadView(APIView):
     )
     def patch(self, request: Request, pk: str) -> Response:
         try:
-            notification = NotificationService.mark_read(pk, request.user)
+            notification = NotificationService.mark_read(pk, cast(User, request.user))
         except ValidationServiceError as exc:
             return Response(
                 {"error": "not_found", "message": str(exc)},

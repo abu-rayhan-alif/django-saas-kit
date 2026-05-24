@@ -6,7 +6,7 @@ import logging
 
 from apps.notifications.models import Notification
 from asgiref.sync import async_to_sync
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import User
 from django.db.models import QuerySet
 
 from services.exceptions import ValidationServiceError
@@ -35,7 +35,7 @@ class NotificationService:
 
     @staticmethod
     def create(
-        user: AbstractBaseUser,
+        user: User,
         title: str,
         body: str,
     ) -> Notification:
@@ -76,7 +76,7 @@ class NotificationService:
         return notification
 
     @staticmethod
-    def mark_read(notification_id: str, user: AbstractBaseUser) -> Notification:
+    def mark_read(notification_id: str, user: User) -> Notification:
         """Mark a notification as read.
 
         Args:
@@ -103,11 +103,11 @@ class NotificationService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def list_unread(user: AbstractBaseUser) -> QuerySet[Notification]:
+    def list_unread(user: User) -> QuerySet[Notification]:
         """Return all unread notifications for *user*, newest first."""
         return Notification.objects.filter(user=user, is_read=False)
 
     @staticmethod
-    def list_all(user: AbstractBaseUser) -> QuerySet[Notification]:
+    def list_all(user: User) -> QuerySet[Notification]:
         """Return all notifications for *user*, newest first."""
         return Notification.objects.filter(user=user)

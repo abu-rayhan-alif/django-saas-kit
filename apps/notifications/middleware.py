@@ -31,7 +31,7 @@ def _get_user_from_token(raw_token: str):
 
     User = get_user_model()
     try:
-        token = AccessToken(raw_token)
+        token = AccessToken(raw_token)  # type: ignore[arg-type]
         user_id = token["user_id"]
         return User.objects.get(pk=user_id)
     except (InvalidToken, TokenError, User.DoesNotExist):
