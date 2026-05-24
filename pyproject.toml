@@ -30,7 +30,7 @@ packages = ["apps", "config", "examples", "services"]
 django_settings_module = "config.settings.mypy"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.local"
+DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers"
 testpaths = ["tests"]

@@ -1,31 +1,41 @@
-.PHONY: help dev up down build logs shell migrate seed-demo beat-schedule redis-check test lint
+.PHONY: help dev up down build logs shell migrate test lint format \
+        seed-demo beat-schedule redis-check
 
+# ── Default target ────────────────────────────────────────────────────────────
 help:
-	@echo "Available commands:"
-	@echo "  make dev      - First-time setup: .env + Docker stack (recommended)"
-	@echo "  make up       - Start local Docker stack"
-	@echo "  make down     - Stop local Docker stack"
-	@echo "  make build    - Build Docker images"
-	@echo "  make logs     - Tail web service logs"
-	@echo "  make shell    - Open Django shell in web container"
-	@echo "  make migrate  - Run database migrations"
-	@echo "  make seed-demo - Seed demo tenants and admin user"
-	@echo "  make beat-schedule - Register Celery Beat periodic tasks in DB"
-	@echo "  make redis-check   - Verify Redis via Django cache"
-	@echo "  make test     - Run pytest locally"
-	@echo "  make lint     - Run ruff and mypy"
-
-dev:
-	@test -f .env || cp .env.example .env
-	docker compose up -d --build
 	@echo ""
-	@echo "Django SaaS Kit is starting (migrations run on container boot)."
-	@echo "  Health:  http://localhost:8000/health/"
-	@echo "  Swagger: http://localhost:8000/api/docs/"
-	@echo "  Optional demo data: make seed-demo"
+	@echo "Django SaaS Kit — available make targets"
+	@echo ""
+	@echo "  Development"
+	@echo "    make dev           First-time setup: copy .env + start stack"
+	@echo "    make up            Start the Docker Compose stack (detached)"
+	@echo "    make down          Stop and remove containers"
+	@echo "    make build         Rebuild Docker images"
+	@echo "    make logs          Tail web-service logs  (Ctrl-C to stop)"
+	@echo ""
+	@echo "  Django"
+	@echo "    make shell         Open Django shell inside the web container"
+	@echo "    make migrate       Run database migrations"
+	@echo "    make seed-demo     Seed demo tenants + admin user"
+	@echo ""
+	@echo "  Quality"
+	@echo "    make test          Run pytest (local, no Docker)"
+	@echo "    make lint          ruff check + mypy"
+	@echo "    make format        ruff format (auto-fix)"
+	@echo ""
 
+# ── First-time developer setup ────────────────────────────────────────────────
+dev:
+	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example")
+	docker compose up --build -d
+	@echo ""
+	@echo "Stack is up. API: http://localhost:8000"
+	@echo "Swagger UI: http://localhost:8000/api/docs/"
+	@echo ""
+
+# ── Docker Compose shortcuts ──────────────────────────────────────────────────
 up:
-	docker compose up -d --build
+	docker compose up -d
 
 down:
 	docker compose down
@@ -36,6 +46,7 @@ build:
 logs:
 	docker compose logs -f web
 
+# ── Django management ─────────────────────────────────────────────────────────
 shell:
 	docker compose exec web python manage.py shell
 
@@ -49,12 +60,17 @@ beat-schedule:
 	docker compose exec web python manage.py sync_beat_schedule
 
 redis-check:
-	docker compose exec web python manage.py check_redis
+	docker compose exec web python manage.py shell -c \
+	    "from django.core.cache import cache; cache.set('ping','pong',10); print(cache.get('ping'))"
 
+# ── Local quality checks (no Docker needed) ───────────────────────────────────
 test:
-	pytest -v
+	pytest
 
 lint:
 	ruff check .
-	ruff format --check .
 	mypy .
+
+format:
+	ruff format .
+	ruff check . --fix

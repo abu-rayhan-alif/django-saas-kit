@@ -38,7 +38,7 @@ def test_anonymize_clears_pii():
     user = _make_user()
     original_pk = user.pk
 
-    result = GDPRService.anonymize(user)
+    GDPRService.anonymize(user)
 
     user.refresh_from_db()
     assert user.pk == original_pk, "User row must be kept"

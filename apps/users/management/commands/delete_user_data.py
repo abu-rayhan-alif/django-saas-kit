@@ -53,8 +53,8 @@ class Command(BaseCommand):
 
         try:
             user = User.objects.get(pk=user_id)
-        except (User.DoesNotExist, ValueError, TypeError):
-            raise CommandError(f"No user found with id '{user_id}'.")
+        except (User.DoesNotExist, ValueError, TypeError) as exc:
+            raise CommandError(f"No user found with id '{user_id}'.") from exc
 
         mode_label = "HARD DELETE (permanent removal)" if hard_delete else "ANONYMIZE (PII wipe)"
 

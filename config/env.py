@@ -12,7 +12,7 @@ from typing import Any, cast
 import dj_database_url
 from decouple import AutoConfig, Csv, UndefinedValueError, undefined
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 _config = AutoConfig(search_path=BASE_DIR)
 

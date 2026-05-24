@@ -1,4 +1,4 @@
-"""User use-cases — no HTTP or DRF dependencies."""
+"""User use-cases -- no HTTP or DRF dependencies."""
 
 from dataclasses import dataclass
 from functools import partial
@@ -24,10 +24,21 @@ class CreateUserInput:
     last_name: str = ""
 
 
+def _enqueue_welcome_email(user_pk: int) -> None:
+    """Called via transaction.on_commit -- imports lazily to avoid circular deps."""
+    from apps.users.tasks import send_welcome_email  # noqa: PLC0415
+
+    send_welcome_email.delay(user_pk)
+
+
 class UserService:
     """User registration and profile use-cases."""
 
-    # TODO: Add your business logic here
+    @staticmethod
+    def get_display_name(user: AbstractUser) -> str:
+        """Return full name if set, else fall back to username."""
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
 
     @staticmethod
     def create_user(data: CreateUserInput) -> AbstractUser:
@@ -68,18 +79,8 @@ class UserService:
             user.set_password(data.password)
             user.full_clean()
             user.save()
-
-        transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
+            # Register on_commit INSIDE the atomic block so it fires only after
+            # the transaction successfully commits, never on rollback.
+            transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
 
         return user
-
-    @staticmethod
-    def get_display_name(user: AbstractUser) -> str:
-        full_name = user.get_full_name().strip()
-        return full_name or user.username
-
-
-def _enqueue_welcome_email(user_id: int) -> None:
-    from apps.users.tasks import send_welcome_email
-
-    send_welcome_email.delay(user_id)

@@ -1,4 +1,4 @@
-"""SAAS-701 — CORS, CSP, and production security settings."""
+"""SAAS-701 -- CORS, CSP, and production security settings."""
 
 from __future__ import annotations
 
@@ -44,6 +44,7 @@ def test_prod_settings_security(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///test.db")
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("ALLOWED_HOSTS", "api.example.com")
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "https://app.example.com")
 
     for mod in list(sys.modules):
         if mod.startswith("config.settings"):
@@ -57,6 +58,7 @@ def test_prod_settings_security(monkeypatch):
     assert prod.X_FRAME_OPTIONS == "DENY"
     assert prod.CONTENT_SECURITY_POLICY
     assert "frame-ancestors" in prod.CONTENT_SECURITY_POLICY
+    assert prod.CORS_ALLOWED_ORIGINS == ["https://app.example.com"]
 
 
 def test_allowed_hosts_from_env(monkeypatch):
@@ -64,6 +66,7 @@ def test_allowed_hosts_from_env(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///test.db")
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("ALLOWED_HOSTS", "a.example.com,b.example.com")
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "https://app.example.com")
 
     for mod in list(sys.modules):
         if mod.startswith("config.settings"):

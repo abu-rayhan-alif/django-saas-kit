@@ -22,5 +22,5 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(
         write_only=True,
         min_length=8,
-        help_text="New password to set.",
+        help_text="New password (min 8 characters).",
     )

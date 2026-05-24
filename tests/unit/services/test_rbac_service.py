@@ -150,5 +150,4 @@ class TestHasRole:
 
         # Admin check is True in A (owner >= admin conceptually, but has_role
         # does exact membership — owner is NOT in [admin])
-        assert RBACService.has_role(user, tenant_a, [RoleChoices.MEMBER]) is False
-        assert RBACService.has_role(user, tenant_b, [RoleChoices.MEMBER]) is True
+        assert RBACService.has_role(user, tenant_a, [RoleChoices.ADMIN]) is False

@@ -64,7 +64,7 @@ def test_login_rate_throttle_class_enforces_limit(settings):
 
 
 @pytest.mark.django_db
-def test_login_throttle_returns_429(api_client, auth_user):
+def test_login_throttle_returns_429(api_client, auth_user, with_throttling):
     """Sixth login within a minute exceeds the default 5/minute limit."""
     for _ in range(5):
         response = _post_token(api_client, auth_user.username, "StrongPass123!")
@@ -78,7 +78,7 @@ def test_login_throttle_returns_429(api_client, auth_user):
 
 
 @pytest.mark.django_db
-def test_authenticated_user_throttle_returns_429(api_client, auth_user, settings):
+def test_authenticated_user_throttle_returns_429(api_client, auth_user, settings, with_throttling):
     """Authenticated list requests exceed a lowered user rate limit."""
     rf = _rest_framework_with_rates(settings, user="2/minute", login="100/minute")
     with override_settings(REST_FRAMEWORK=rf):

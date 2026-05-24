@@ -234,8 +234,8 @@ class TestTenantIsolation:
         token = login(api_client, "owner")
         resp = post_json(
             api_client,
-            ASSIGN_URL.format(tenant_id=other_tenant.id),
-            {"user_id": plain_user.pk, "role": "member"},
+            f"/api/v1/rbac/{other_tenant.id}/roles/assign/",
+            {"user_id": str(owner_user.id), "role": RoleChoices.MEMBER},
             token=token,
         )
-        assert resp.status_code == 403, "A role in tenant A must not grant access in tenant B"
+        assert resp.status_code == 403, resp.json()

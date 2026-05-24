@@ -9,9 +9,6 @@ class StandardPagination(PageNumberPagination):
     ----------------
     page       1-based page number (default: 1).
     page_size  Items per page (default: 20, max: 100).
-               Pass ``page_size=0`` to disable pagination on a specific view
-               by overriding ``pagination_class = None`` instead — this class
-               always enforces a minimum of 1.
 
     Response envelope
     -----------------

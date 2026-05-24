@@ -1,0 +1,10 @@
+Hi {{ user_name }},
+
+{{ title }}
+
+{{ body }}
+
+Log in to see all your notifications: {{ frontend_url }}/notifications/
+
+Thanks,
+Django SaaS Kit
