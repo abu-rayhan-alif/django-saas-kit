@@ -19,7 +19,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.12"
-  DJANGO_SETTINGS_MODULE: config.settings.local
+  DJANGO_SETTINGS_MODULE: config.settings.test
   COVERAGE_FAIL_UNDER: "80"
 
 jobs:
@@ -110,6 +110,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key-for-ci-only
           DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1,testserver,.localhost
         run: python manage.py migrate
 
       - name: Pytest with coverage (fail under ${{ env.COVERAGE_FAIL_UNDER }}%)
@@ -118,6 +119,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key-for-ci-only
           DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1,testserver,.localhost
         run: |
           pytest \
             --cov=config \

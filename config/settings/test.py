@@ -7,22 +7,28 @@ Docker stack).  In CI, DATABASE_URL is injected as a shell env var which
 overrides the .env file, so CI always uses real PostgreSQL.
 """
 
+import os
 import tempfile
 from pathlib import Path
+
+from config.env import get_database_url_config
 
 from .local import *  # noqa: F403
 
 # ---------------------------------------------------------------------------
-# Database — SQLite (no postgres required; works on Windows and Linux)
+# Database — PostgreSQL in CI when DATABASE_URL is set; else SQLite offline
 # ---------------------------------------------------------------------------
 _TEST_DB = Path(tempfile.gettempdir()) / "django-saas-kit-test.sqlite3"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(_TEST_DB),
+if os.environ.get("DATABASE_URL", "").startswith("postgres"):
+    DATABASES = {"default": get_database_url_config()}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": str(_TEST_DB),
+        }
     }
-}
 
 # ---------------------------------------------------------------------------
 # Email — capture in memory
