@@ -10,20 +10,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REQUIREMENTS_DIR = ROOT / "requirements"
 
+STUB_NAMES = ("django-stubs", "djangorestframework-stubs")
+
 BAD_PATTERNS = [
     (re.compile(r"django-stubs\s*>=\s*"), "django-stubs must be pinned in typing-stubs.txt"),
+    (re.compile(r"django-stubs\s*==\s*"), "move django-stubs pin to typing-stubs.txt"),
     (
-        re.compile(r"djangorestframework-stubs\s*>=\s*3\.17"),
-        "djangorestframework-stubs 3.17+ needs django-stubs 6 / Django 5.2+",
+        re.compile(r"djangorestframework-stubs\s*>=\s*"),
+        "djangorestframework-stubs must be pinned in typing-stubs.txt",
     ),
     (
-        re.compile(r"djangorestframework-stubs\s*>=\s*3\.15\s*,\s*<\s*4"),
-        "use typing-stubs.txt pins instead of a wide djangorestframework-stubs range",
+        re.compile(r"djangorestframework-stubs\s*==\s*"),
+        "move djangorestframework-stubs pin to typing-stubs.txt",
     ),
 ]
 
+ALLOW_STUB_FILES = frozenset({"typing-stubs.txt", "constraints.txt"})
+
 TYPING_STUBS = REQUIREMENTS_DIR / "typing-stubs.txt"
+LOCAL_TXT = REQUIREMENTS_DIR / "local.txt"
 REQUIRED_IN_TYPING = ("django-stubs==5.2.9", "djangorestframework-stubs==3.16.9")
+REQUIRED_LOCAL_INCLUDE = "-r typing-stubs.txt"
 
 
 def main() -> int:
@@ -37,8 +44,15 @@ def main() -> int:
             if line not in typing_text:
                 errors.append(f"{TYPING_STUBS.name} must contain: {line}")
 
+    if LOCAL_TXT.is_file():
+        local_text = LOCAL_TXT.read_text(encoding="utf-8")
+        if REQUIRED_LOCAL_INCLUDE not in local_text:
+            errors.append(f"{LOCAL_TXT.name} must include: {REQUIRED_LOCAL_INCLUDE}")
+    else:
+        errors.append(f"missing {LOCAL_TXT.relative_to(ROOT)}")
+
     for path in sorted(REQUIREMENTS_DIR.glob("*.txt")):
-        if path.name == "typing-stubs.txt":
+        if path.name in ALLOW_STUB_FILES:
             continue
         text = path.read_text(encoding="utf-8")
         for pattern, message in BAD_PATTERNS:
@@ -47,6 +61,10 @@ def main() -> int:
 
     if errors:
         print("Invalid requirements pins:", file=sys.stderr)
+        print(
+            "Merge latest main (typing-stubs.txt) or close Dependabot stubs PRs.",
+            file=sys.stderr,
+        )
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
         return 1

@@ -47,13 +47,8 @@ jobs:
         # where a relative constraints path does not exist.
         run: SKIP=mypy pre-commit run --all-files
 
-      - name: Verify dependency pins
-        run: python scripts/verify_requirements_pins.py
-
       - name: Install dependencies (for mypy)
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements/local.txt -c requirements/constraints.txt
+        run: bash scripts/ci_install_requirements.sh
 
       - name: Mypy (type check)
         env:
@@ -102,9 +97,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements/local.txt -c requirements/constraints.txt
+        run: bash scripts/ci_install_requirements.sh
 
       - name: Copy env file
         run: cp .env.example .env
