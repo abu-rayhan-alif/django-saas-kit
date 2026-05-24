@@ -18,6 +18,8 @@ updates:
         versions: [">=3.17.0"]
       - dependency-name: django-stubs
         versions: [">=6.0.0"]
+      - dependency-name: django-filter
+        versions: [">=25.0.0"]
     commit-message:
       prefix: deps
       prefix-development: deps
