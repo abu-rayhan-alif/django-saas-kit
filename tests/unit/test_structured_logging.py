@@ -148,3 +148,62 @@ def test_json_log_format(settings):
     # capture_logs returns dict events; JSON rendering applies to stdlib path.
     assert logs[0]["event"] == "json_event"
     assert logs[0]["key"] == "value"
+
+
+# ---------------------------------------------------------------------------
+# NEW-05 — sensitive-field redaction
+# ---------------------------------------------------------------------------
+
+
+def test_redact_sensitive_fields_processor():
+    from apps.common.logging_config import SENSITIVE_FIELDS, redact_sensitive_fields
+
+    event_dict = {
+        "event": "user_login",
+        "password": "hunter2",
+        "email": "alice@example.com",
+        "token": "eyJhbGci...",
+        "safe_field": "keep_me",
+    }
+    result = redact_sensitive_fields(None, "info", event_dict)
+
+    assert result["password"] == "[REDACTED]"
+    assert result["email"] == "[REDACTED]"
+    assert result["token"] == "[REDACTED]"
+    assert result["safe_field"] == "keep_me"
+    assert result["event"] == "user_login"
+
+
+def test_redact_all_sensitive_fields_present_in_blocklist():
+    """Every field in SENSITIVE_FIELDS is redacted from log output."""
+    from apps.common.logging_config import SENSITIVE_FIELDS, redact_sensitive_fields
+
+    event_dict: dict = {"event": "test"} | {f: "secret_value" for f in SENSITIVE_FIELDS}
+    result = redact_sensitive_fields(None, "info", event_dict)
+
+    for field in SENSITIVE_FIELDS:
+        assert result[field] == "[REDACTED]", f"Field '{field}' was not redacted"
+
+
+def test_redaction_runs_in_shared_processors():
+    """Integration: sensitive fields are absent from final log output."""
+    with capture_logs(processors=shared_processors()) as logs:
+        structlog.contextvars.clear_contextvars()
+        structlog.get_logger("tests").info(
+            "auth_attempt",
+            password="should_not_appear",
+            access_token="raw_jwt",
+            user_id=42,
+        )
+    record = logs[0]
+    assert record["password"] == "[REDACTED]"
+    assert record["access_token"] == "[REDACTED]"
+    assert record["user_id"] == 42
+
+
+def test_redact_does_not_mutate_fields_not_in_blocklist():
+    from apps.common.logging_config import redact_sensitive_fields
+
+    event_dict = {"event": "ok", "user_id": 99, "action": "login"}
+    result = redact_sensitive_fields(None, "info", event_dict)
+    assert result == {"event": "ok", "user_id": 99, "action": "login"}

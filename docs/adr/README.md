@@ -45,10 +45,11 @@ Optional: **References**, **Status** (`Proposed` | `Accepted` | `Deprecated` | `
 | [004](004-why-redis.md) | Why Redis | Accepted |
 | [005](005-django-environ-vs-python-decouple.md) | django-environ vs python-decouple | Accepted |
 | [006](006-sentry-vs-prometheus.md) | Sentry first, Prometheus later | Accepted |
+| [007](007-orm-query-strategy.md) | ORM query strategy (N+1, pagination, indexing, caching) | Accepted |
 
 ## How to add an ADR
 
-1. Pick the next number (`006-...`).
+1. Pick the next number (`008-...`).
 2. Copy structure from [001-use-postgresql.md](001-use-postgresql.md).
 3. Fill **Context → Decision → Consequences → Alternatives**.
 4. Add a row to the index table above.

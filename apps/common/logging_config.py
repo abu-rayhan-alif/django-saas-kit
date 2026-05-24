@@ -13,17 +13,70 @@ from typing import Any
 
 import structlog
 
+# ---------------------------------------------------------------------------
+# Sensitive-field redaction (NEW-05)
+# ---------------------------------------------------------------------------
+
+#: Fields whose values must never appear in log output.
+#: Add new names here — do NOT log passwords, raw tokens, or full emails.
+SENSITIVE_FIELDS: frozenset[str] = frozenset(
+    {
+        "password",
+        "new_password",
+        "old_password",
+        "confirm_password",
+        "token",
+        "access_token",
+        "refresh_token",
+        "reset_token",
+        "id_token",
+        "authorization",
+        "email",
+        "secret",
+        "api_key",
+        "secret_key",
+        "credit_card",
+        "ssn",
+    }
+)
+
+_REDACTED = "[REDACTED]"
+
+
+def redact_sensitive_fields(logger: object, method: str, event_dict: dict) -> dict:  # noqa: ARG001
+    """Drop sensitive values from the log event dict before rendering."""
+    for field in SENSITIVE_FIELDS:
+        if field in event_dict:
+            event_dict[field] = _REDACTED
+    return event_dict
+
+
+def _safe_add_logger_name(logger: object, method: str, event_dict: dict) -> dict:
+    """Like structlog.stdlib.add_logger_name but safe for non-stdlib loggers.
+
+    structlog.stdlib.add_logger_name assumes the underlying logger is a stdlib
+    LoggerAdapter with a ``.name`` attribute.  When tests use
+    ``structlog.testing.capture_logs``, the underlying logger is a
+    ``PrintLogger`` which has no ``.name``.  This wrapper skips silently
+    in that case so tests don't raise AttributeError.
+    """
+    name = getattr(logger, "name", None)
+    if name:
+        event_dict["logger"] = name
+    return event_dict
+
 
 def shared_processors() -> list[structlog.types.Processor]:
     """Processors applied to both structlog and stdlib log records."""
     return [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
-        structlog.stdlib.add_logger_name,
+        _safe_add_logger_name,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.UnicodeDecoder(),
+        redact_sensitive_fields,
     ]
 
 
