@@ -1,6 +1,5 @@
 from typing import cast
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes

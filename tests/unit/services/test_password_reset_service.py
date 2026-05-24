@@ -119,5 +119,7 @@ class TestPasswordResetConfirm:
         token_gen = PasswordResetTokenGenerator()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_gen.make_token(user)
-        with pytest.raises(ValidationServiceError, match="too short|too common|entirely numeric|similar"):
+        with pytest.raises(
+            ValidationServiceError, match="too short|too common|entirely numeric|similar"
+        ):
             PasswordResetService.confirm_reset(uid, token, "abc")

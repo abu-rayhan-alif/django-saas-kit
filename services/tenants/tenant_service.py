@@ -19,7 +19,6 @@ class CreateTenantResult:
 
 
 class TenantService:
-
     @staticmethod
     def normalize_slug(slug: str) -> str:
         """Lowercase, strip whitespace, replace spaces with hyphens."""

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from celery import shared_task
 from django.conf import settings
-
-from apps.common.celery_policy import TASK_RETRY_DECORATOR_KWARGS
 from services.common import EmailService
 from services.common.idempotency import IdempotencyService
+
+from apps.common.celery_policy import TASK_RETRY_DECORATOR_KWARGS
+from celery import shared_task
 
 TASK_NAME = "send_email_notification"
 
@@ -39,9 +39,7 @@ def send_email_notification(self, notification_id: str) -> str:
 
     def _send():
         try:
-            notification = Notification.objects.select_related("user").get(
-                pk=notification_id
-            )
+            notification = Notification.objects.select_related("user").get(pk=notification_id)
         except Notification.DoesNotExist:
             # Notification was deleted before the task ran — nothing to do.
             return f"email_notification_skipped:{notification_id}"

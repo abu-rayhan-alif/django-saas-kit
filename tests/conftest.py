@@ -1,6 +1,7 @@
 """
 Root conftest — loaded before any test collection or Django setup.
 """
+
 import os
 
 import pytest

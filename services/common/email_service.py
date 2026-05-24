@@ -53,9 +53,7 @@ class EmailService:
             ValueError: If neither *template_html* nor *template_txt* is given.
         """
         if not template_html and not template_txt:
-            raise ValueError(
-                "At least one of template_html or template_txt must be provided."
-            )
+            raise ValueError("At least one of template_html or template_txt must be provided.")
 
         ctx = context or {}
         sender = from_email or settings.DEFAULT_FROM_EMAIL

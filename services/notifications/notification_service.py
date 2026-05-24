@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import logging
 
+from apps.notifications.models import Notification
 from asgiref.sync import async_to_sync
 from django.contrib.auth.models import AbstractBaseUser
 from django.db.models import QuerySet
 
-from apps.notifications.models import Notification
 from services.exceptions import ValidationServiceError
 
 logger = logging.getLogger(__name__)
@@ -90,9 +90,7 @@ class NotificationService:
         try:
             notification = Notification.objects.get(pk=notification_id, user=user)
         except Notification.DoesNotExist as exc:
-            raise ValidationServiceError(
-                f"Notification {notification_id} not found."
-            ) from exc
+            raise ValidationServiceError(f"Notification {notification_id} not found.") from exc
 
         if not notification.is_read:
             notification.is_read = True

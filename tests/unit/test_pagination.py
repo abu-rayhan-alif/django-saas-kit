@@ -46,9 +46,12 @@ class TestPagination:
         assert resp.status_code == 200, resp.json()
         data = resp.json()
 
-        assert set(data.keys()) >= {"count", "next", "previous", "results"}, (
-            f"Paginated response must have count/next/previous/results, got: {list(data.keys())}"
-        )
+        assert set(data.keys()) >= {
+            "count",
+            "next",
+            "previous",
+            "results",
+        }, f"Paginated response must have count/next/previous/results, got: {list(data.keys())}"
         assert isinstance(data["results"], list)
         assert isinstance(data["count"], int)
 

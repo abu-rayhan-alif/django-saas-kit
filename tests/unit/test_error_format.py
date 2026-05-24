@@ -5,6 +5,7 @@ Unit tests for the unified error envelope (SAAS-302).
 import json
 
 import pytest
+from apps.common.exceptions import saas_exception_handler
 from rest_framework import status
 from rest_framework.exceptions import (
     AuthenticationFailed,
@@ -13,8 +14,6 @@ from rest_framework.exceptions import (
     PermissionDenied,
     ValidationError,
 )
-
-from apps.common.exceptions import saas_exception_handler
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -33,9 +32,9 @@ def _auth_headers(token: str) -> dict:
 
 
 def _assert_envelope(data: dict) -> None:
-    assert _ENVELOPE_KEYS == set(data.keys()), (
-        f"Expected keys {_ENVELOPE_KEYS}, got {set(data.keys())}"
-    )
+    assert _ENVELOPE_KEYS == set(
+        data.keys()
+    ), f"Expected keys {_ENVELOPE_KEYS}, got {set(data.keys())}"
     assert isinstance(data["error"], str) and data["error"]
     assert isinstance(data["message"], str) and data["message"]
     assert isinstance(data["details"], dict)
@@ -114,7 +113,6 @@ class TestExceptionHandlerUnit:
 
 @pytest.mark.django_db
 class TestErrorFormatIntegration:
-
     def test_invalid_login_returns_envelope(self, api_client):
         resp = _post_json(api_client, TOKEN_URL, {"username": "nobody", "password": "wrong"})
         assert resp.status_code == 401

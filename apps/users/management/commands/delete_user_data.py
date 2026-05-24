@@ -14,7 +14,6 @@ Usage
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
-
 from services.users.gdpr_service import GDPRService
 
 User = get_user_model()

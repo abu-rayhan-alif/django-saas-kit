@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import pytest
 from django.core import mail
-
 from services.common import EmailService
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -96,9 +94,7 @@ class TestEmailServiceSend:
 
         msg = mail.outbox[0]
         # EmailMultiAlternatives stores alternatives as (content, mimetype) tuples.
-        html_parts = [
-            content for content, mime in msg.alternatives if mime == "text/html"
-        ]
+        html_parts = [content for content, mime in msg.alternatives if mime == "text/html"]
         assert html_parts, "Expected an HTML alternative to be attached"
         assert "Alice" in html_parts[0]
 

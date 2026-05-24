@@ -100,9 +100,7 @@ def saas_exception_handler(exc: Exception, context: dict) -> Response | None:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    error_code: str = getattr(exc, "default_code", None) or _camel_to_snake(
-        type(exc).__name__
-    )
+    error_code: str = getattr(exc, "default_code", None) or _camel_to_snake(type(exc).__name__)
     detail = getattr(exc, "detail", None)
 
     if isinstance(exc, ValidationError):

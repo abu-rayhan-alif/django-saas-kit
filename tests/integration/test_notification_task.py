@@ -9,11 +9,10 @@ outbox with the correct params.
 from __future__ import annotations
 
 import pytest
-from django.contrib.auth import get_user_model
-from django.core import mail
-
 from apps.notifications.models import Notification
 from apps.notifications.tasks import send_email_notification
+from django.contrib.auth import get_user_model
+from django.core import mail
 from services.notifications import NotificationService
 
 User = get_user_model()
@@ -41,9 +40,7 @@ def locmem_email(settings):
 
 @pytest.fixture(autouse=True)
 def no_channel_layer(settings):
-    settings.CHANNEL_LAYERS = {
-        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
-    }
+    settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
 # ---------------------------------------------------------------------------

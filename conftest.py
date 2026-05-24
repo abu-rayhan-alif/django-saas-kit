@@ -4,6 +4,7 @@ Root conftest.py — loaded before pytest-django initialises Django settings.
 Sets required environment variables using setdefault so that they can still
 be overridden by the calling shell (e.g. DATABASE_URL in CI).
 """
+
 import os
 
 

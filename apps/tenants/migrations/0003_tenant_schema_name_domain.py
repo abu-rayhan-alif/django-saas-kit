@@ -12,7 +12,6 @@ def _backfill_schema_name(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("tenants", "0002_tenant_is_active_alter_tenant_created_at"),
     ]

@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import pytest
-from django.contrib.auth import get_user_model
-
 from apps.notifications.models import Notification
+from django.contrib.auth import get_user_model
 from services.exceptions import ValidationServiceError
 from services.notifications import NotificationService
 

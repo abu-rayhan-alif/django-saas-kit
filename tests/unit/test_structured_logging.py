@@ -156,7 +156,7 @@ def test_json_log_format(settings):
 
 
 def test_redact_sensitive_fields_processor():
-    from apps.common.logging_config import SENSITIVE_FIELDS, redact_sensitive_fields
+    from apps.common.logging_config import redact_sensitive_fields
 
     event_dict = {
         "event": "user_login",

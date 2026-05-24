@@ -8,11 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from services.exceptions import ValidationServiceError
+from services.notifications import NotificationService
 
 from apps.common.pagination import StandardPagination
 from apps.notifications.serializers import NotificationSerializer
-from services.exceptions import ValidationServiceError
-from services.notifications import NotificationService
 
 
 class NotificationListView(APIView):

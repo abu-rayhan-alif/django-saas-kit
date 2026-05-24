@@ -12,11 +12,10 @@ from __future__ import annotations
 import json
 
 import pytest
-from django.test import Client
-
 from apps.tenants.models import Domain, Tenant
-from services.tenants import TenantService
+from django.test import Client
 from services.exceptions import ConflictServiceError, ValidationServiceError
+from services.tenants import TenantService
 
 pytestmark = pytest.mark.django_db
 
@@ -57,9 +56,8 @@ def tenant2():
 
 def test_tenant1_request_resolves_to_tenant1(tenant1, tenant2):
     """A request to tenant1.localhost must set request.tenant to tenant1."""
-    from django.test import RequestFactory
-
     from apps.tenants.middleware import TenantMiddleware
+    from django.test import RequestFactory
 
     rf = RequestFactory()
     request = rf.get("/api/v1/", SERVER_NAME="tenant1.localhost")
@@ -70,6 +68,7 @@ def test_tenant1_request_resolves_to_tenant1(tenant1, tenant2):
     def _capture(req):
         captured["tenant"] = req.tenant
         from django.http import HttpResponse
+
         return HttpResponse()
 
     TenantMiddleware(_capture)(request)
@@ -78,9 +77,8 @@ def test_tenant1_request_resolves_to_tenant1(tenant1, tenant2):
 
 
 def test_tenant2_request_resolves_to_tenant2(tenant1, tenant2):
-    from django.test import RequestFactory
-
     from apps.tenants.middleware import TenantMiddleware
+    from django.test import RequestFactory
 
     rf = RequestFactory()
     request = rf.get("/api/v1/", SERVER_NAME="tenant2.localhost")
@@ -91,6 +89,7 @@ def test_tenant2_request_resolves_to_tenant2(tenant1, tenant2):
     def _capture(req):
         captured["tenant"] = req.tenant
         from django.http import HttpResponse
+
         return HttpResponse()
 
     TenantMiddleware(_capture)(request)
@@ -146,9 +145,7 @@ def test_create_tenant_is_atomic_on_duplicate_domain(db):
     )
 
     with pytest.raises(ConflictServiceError):
-        TenantService.create_tenant(
-            name="Y", schema_name="y", domain="taken.localhost"
-        )
+        TenantService.create_tenant(name="Y", schema_name="y", domain="taken.localhost")
 
     # Tenant "Y" must NOT have been created
     assert not Tenant.objects.filter(schema_name="y").exists()
@@ -163,9 +160,7 @@ def test_create_tenant_rejects_duplicate_schema_name():
 
 def test_create_tenant_rejects_invalid_schema_name():
     with pytest.raises(ValidationServiceError):
-        TenantService.create_tenant(
-            name="Bad", schema_name="invalid slug!", domain="bad.localhost"
-        )
+        TenantService.create_tenant(name="Bad", schema_name="invalid slug!", domain="bad.localhost")
 
 
 # ---------------------------------------------------------------------------

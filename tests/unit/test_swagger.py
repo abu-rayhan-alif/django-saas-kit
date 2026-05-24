@@ -61,8 +61,7 @@ class TestSchemaContent:
         """Tenant paths, when present, must be under /api/v1/tenants/."""
         schema = self._schema(api_client)
         wrong_prefix = [
-            p for p in schema["paths"]
-            if "tenants" in p and not p.startswith("/api/v1/tenants/")
+            p for p in schema["paths"] if "tenants" in p and not p.startswith("/api/v1/tenants/")
         ]
         assert not wrong_prefix, f"Tenant paths under wrong prefix: {wrong_prefix}"
 
@@ -81,7 +80,8 @@ class TestSchemaContent:
         """No /api/ path (excluding schema/docs/redoc) should be outside /api/v1/."""
         schema = self._schema(api_client)
         api_paths = [
-            p for p in schema.get("paths", {})
+            p
+            for p in schema.get("paths", {})
             if p.startswith("/api/")
             and not p.startswith("/api/schema")
             and not p.startswith("/api/docs")

@@ -11,10 +11,9 @@ Tests cover:
 from __future__ import annotations
 
 import pytest
-from django.test import RequestFactory
-
 from apps.tenants.middleware import TenantMiddleware
 from apps.tenants.models import Domain, Tenant
+from django.test import RequestFactory
 
 pytestmark = pytest.mark.django_db
 

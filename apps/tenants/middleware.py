@@ -63,7 +63,9 @@ class TenantMiddleware:
         # Strip port suffix (e.g. "tenant1.localhost:8000" → "tenant1.localhost")
         host = request.get_host().split(":")[0]
 
-        from apps.tenants.models import Domain  # noqa: PLC0415 — avoids import-time app registry issue
+        from apps.tenants.models import (
+            Domain,  # noqa: PLC0415 — avoids import-time app registry issue
+        )
 
         try:
             domain_obj = Domain.objects.select_related("tenant").get(domain=host)
