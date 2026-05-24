@@ -20,12 +20,12 @@ from services.rbac import RBACService
 
 @pytest.fixture
 def tenant_a(db):
-    return Tenant.objects.create(name="Acme Corp", slug="acme")
+    return Tenant.objects.create(name="Acme Corp", slug="acme", schema_name="acme")
 
 
 @pytest.fixture
 def tenant_b(db):
-    return Tenant.objects.create(name="Globex Corp", slug="globex")
+    return Tenant.objects.create(name="Globex Corp", slug="globex", schema_name="globex")
 
 
 @pytest.fixture

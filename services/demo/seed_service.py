@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from apps.rbac.models import RoleChoices
-from apps.tenants.models import Tenant
+from apps.tenants.models import Domain, Tenant
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import transaction
@@ -42,7 +42,16 @@ class DemoSeedService:
         for spec in DEMO_TENANTS:
             tenant, _ = Tenant.objects.update_or_create(
                 id=spec.id,
-                defaults={"name": spec.name, "slug": spec.slug},
+                defaults={
+                    "name": spec.name,
+                    "slug": spec.slug,
+                    "schema_name": spec.slug,
+                },
+            )
+            Domain.objects.update_or_create(
+                tenant=tenant,
+                domain=f"{spec.slug}.localhost",
+                defaults={"is_primary": True},
             )
             tenants.append(tenant)
         return tenants

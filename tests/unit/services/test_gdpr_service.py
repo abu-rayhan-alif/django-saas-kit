@@ -74,7 +74,7 @@ def test_anonymize_deletes_tenant_roles():
     from apps.tenants.models import Tenant
 
     user = _make_user(username="u3", email="u3@example.com")
-    tenant = Tenant.objects.create(name="ACME", slug="acme")
+    tenant = Tenant.objects.create(name="ACME", slug="acme", schema_name="acme")
     UserTenantRole.objects.create(user=user, tenant=tenant, role="member")
 
     result = GDPRService.anonymize(user)
@@ -127,7 +127,7 @@ def test_hard_delete_removes_roles():
     from apps.tenants.models import Tenant
 
     user = _make_user(username="hd3", email="hd3@example.com")
-    tenant = Tenant.objects.create(name="Beta", slug="beta")
+    tenant = Tenant.objects.create(name="Beta", slug="beta", schema_name="beta")
     UserTenantRole.objects.create(user=user, tenant=tenant, role="admin")
 
     result = GDPRService.hard_delete(user)
@@ -143,7 +143,7 @@ def test_hard_delete_nullifies_assigned_by():
 
     admin = _make_user(username="adm", email="adm@example.com")
     member = _make_user(username="mem", email="mem@example.com")
-    tenant = Tenant.objects.create(name="Gamma", slug="gamma")
+    tenant = Tenant.objects.create(name="Gamma", slug="gamma", schema_name="gamma")
     role = UserTenantRole.objects.create(
         user=member, tenant=tenant, role="member", assigned_by=admin
     )

@@ -66,6 +66,7 @@ def test_login_rate_throttle_class_enforces_limit(settings):
 @pytest.mark.django_db
 def test_login_throttle_returns_429(api_client, auth_user, with_throttling):
     """Sixth login within a minute exceeds the default 5/minute limit."""
+    cache.clear()
     for _ in range(5):
         response = _post_token(api_client, auth_user.username, "StrongPass123!")
         assert response.status_code == status.HTTP_200_OK

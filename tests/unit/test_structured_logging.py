@@ -113,6 +113,7 @@ def test_structlog_json_in_prod_settings(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///test.db")
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 
     for mod in list(sys.modules):
         if mod.startswith("config.settings"):
