@@ -1,0 +1,3 @@
+# Mypy stubs — pinned; do not loosen until Django>=5.2 (see constraints.txt).
+django-stubs==5.2.9
+djangorestframework-stubs==3.16.9

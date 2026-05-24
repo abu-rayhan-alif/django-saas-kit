@@ -21,6 +21,8 @@ env:
   PYTHON_VERSION: "3.12"
   DJANGO_SETTINGS_MODULE: config.settings.test
   COVERAGE_FAIL_UNDER: "80"
+  # Applies to all pip installs in this workflow (even without explicit -c).
+  PIP_CONSTRAINT: requirements/constraints.txt
 
 jobs:
   lint:
@@ -45,10 +47,13 @@ jobs:
         # full requirements installed, which is faster than the mirrors-mypy hook.
         run: SKIP=mypy pre-commit run --all-files
 
+      - name: Verify dependency pins
+        run: python scripts/verify_requirements_pins.py
+
       - name: Install dependencies (for mypy)
         run: |
           pip install --upgrade pip
-          pip install -r requirements/local.txt -c requirements/constraints.txt
+          pip install -r requirements/local.txt
 
       - name: Mypy (type check)
         env:
@@ -99,7 +104,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements/local.txt -c requirements/constraints.txt
+          pip install -r requirements/local.txt
 
       - name: Copy env file
         run: cp .env.example .env
