@@ -12,6 +12,12 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - dependencies
+    # 3.17+ needs django-stubs 6 / Django 5.2+ — see requirements/local.txt
+    ignore:
+      - dependency-name: djangorestframework-stubs
+        versions: [">=3.17.0"]
+      - dependency-name: django-stubs
+        versions: [">=6.0.0"]
     commit-message:
       prefix: deps
       prefix-development: deps

@@ -7,8 +7,8 @@ pytest-mock>=3.15.1,<4
 factory-boy>=3.3,<4
 ruff>=0.15.14,<1
 mypy>=1.13,<1.20
-# django-stubs 5.x tracks Django 5.x; keep <6 until we upgrade Django to 5.2+
-django-stubs>=5.2,<6
-# djangorestframework-stubs 3.17+ requires django-stubs>=6.0.4 — hold below that
-djangorestframework-stubs>=3.15,<3.17
+# Pinned: djangorestframework-stubs 3.17+ requires django-stubs>=6 (needs Django 5.2+).
+# Project uses Django<5.2 — upgrade both together when bumping Django.
+django-stubs==5.2.9
+djangorestframework-stubs==3.16.9
 ipython>=8.26,<9
