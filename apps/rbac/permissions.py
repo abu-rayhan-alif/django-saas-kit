@@ -112,4 +112,5 @@ class HasRolePermission(BasePermission):
 
         if not isinstance(request.user, AbstractBaseUser):
             return False
+
         return RBACService.has_role(request.user, tenant, required_roles)

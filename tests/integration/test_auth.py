@@ -174,7 +174,7 @@ class TestPasswordResetConfirm:
             {"uid": _uid(carol), "token": _token(carol), "new_password": "BrandNewPass1!"},
         )
         assert resp.status_code == 200, resp.json()
-        assert "reset successfully" in resp.json()["detail"]
+        assert "Password reset successful" in resp.json()["detail"]
 
     def test_new_password_accepted_for_login(self, api_client, carol):
         post_json(
@@ -242,8 +242,21 @@ class TestPasswordResetConfirm:
             {
                 "uid": uid_match.group(1),
                 "token": token_match.group(1),
-                "new_password": "EmailFlowPass1!",
+                "new_password": "NewSecure9999!",
             },
         )
         assert resp.status_code == 200, resp.json()
-        assert can_login(api_client, "carol", "EmailFlowPass1!")
+
+        # Old password no longer works
+        old_login = post_json(
+            api_client, TOKEN_URL, {"username": carol.username, "password": "OldPass123!"}
+        )
+        assert old_login.status_code == 401
+
+        # New password works
+        new_login = post_json(
+            api_client,
+            TOKEN_URL,
+            {"username": carol.username, "password": "NewSecure9999!"},
+        )
+        assert new_login.status_code == 200

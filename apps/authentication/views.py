@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from services.auth import PasswordResetService
 from services.exceptions import ConflictServiceError, ValidationServiceError
 from services.users import CreateUserInput, UserService
@@ -135,16 +136,12 @@ class PasswordResetConfirmView(APIView):
     @extend_schema(
         tags=["Auth"],
         request=PasswordResetConfirmSerializer,
-        responses={
-            200: OpenApiResponse(description="Password changed successfully."),
-            400: OpenApiResponse(description="Invalid token, uid, or weak password."),
-        },
-        summary="Confirm password reset with token",
+        responses={200: OpenApiResponse(description="Password reset successful")},
+        summary="Confirm password reset",
     )
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         try:
             PasswordResetService.confirm_reset(
                 uid=serializer.validated_data["uid"],
@@ -153,8 +150,30 @@ class PasswordResetConfirmView(APIView):
             )
         except ValidationServiceError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Password reset successful."}, status=status.HTTP_200_OK)
 
-        return Response(
-            {"detail": "Password has been reset successfully."},
-            status=status.HTTP_200_OK,
-        )
+
+# ---------------------------------------------------------------------------
+# Throttled token view (with demo example for Swagger)
+# ---------------------------------------------------------------------------
+
+
+@extend_schema(
+    tags=["Auth"],
+    summary="Obtain JWT access + refresh token pair",
+    examples=[
+        OpenApiExample(
+            "Demo admin login",
+            description="Created by seed_demo. Use this to explore the API.",
+            value={
+                "username": DEMO_ADMIN.username,
+                "password": DEMO_ADMIN.password,
+            },
+            request_only=True,
+        ),
+    ],
+)
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    """Token endpoint with login-scoped rate limiting (5/minute by default)."""
+
+    throttle_scope = "login"

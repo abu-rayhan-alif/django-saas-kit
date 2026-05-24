@@ -60,12 +60,12 @@ def login(client, username, password="Pass1234!"):
 
 @pytest.fixture
 def tenant(db):
-    return Tenant.objects.create(name="Test Corp", slug="test-corp")
+    return Tenant.objects.create(name="Test Corp", slug="test-corp", schema_name="test-corp")
 
 
 @pytest.fixture
 def other_tenant(db):
-    return Tenant.objects.create(name="Other Corp", slug="other-corp")
+    return Tenant.objects.create(name="Other Corp", slug="other-corp", schema_name="other-corp")
 
 
 @pytest.fixture
@@ -234,8 +234,8 @@ class TestTenantIsolation:
         token = login(api_client, "owner")
         resp = post_json(
             api_client,
-            ASSIGN_URL.format(tenant_id=other_tenant.id),
-            {"user_id": plain_user.pk, "role": "member"},
+            f"/api/v1/rbac/{other_tenant.id}/roles/assign/",
+            {"user_id": str(owner_user.id), "role": RoleChoices.MEMBER},
             token=token,
         )
-        assert resp.status_code == 403, "A role in tenant A must not grant access in tenant B"
+        assert resp.status_code == 403, resp.json()

@@ -10,6 +10,7 @@ def env_vars(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///test.db")
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 
 
 def _reload_settings(module_name: str):
@@ -33,6 +34,7 @@ def test_prod_settings_load(env_vars):
     settings = _reload_settings("config.settings.prod")
     assert settings.DEBUG is False
     assert "localhost" in settings.ALLOWED_HOSTS
+    assert settings.CORS_ALLOWED_ORIGINS == ["http://localhost:3000"]
 
 
 def test_staging_settings_load(env_vars):
@@ -52,4 +54,12 @@ def test_prod_settings_require_allowed_hosts(monkeypatch, env_vars):
     from django.core.exceptions import ImproperlyConfigured
 
     with pytest.raises(ImproperlyConfigured, match="ALLOWED_HOSTS"):
+        _reload_settings("config.settings.prod")
+
+
+def test_prod_settings_require_cors_origins(monkeypatch, env_vars):
+    monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "")
+    from django.core.exceptions import ImproperlyConfigured
+
+    with pytest.raises(ImproperlyConfigured, match="CORS_ALLOWED_ORIGINS"):
         _reload_settings("config.settings.prod")

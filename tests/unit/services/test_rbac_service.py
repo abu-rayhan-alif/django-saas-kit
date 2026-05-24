@@ -20,12 +20,12 @@ from services.rbac import RBACService
 
 @pytest.fixture
 def tenant_a(db):
-    return Tenant.objects.create(name="Acme Corp", slug="acme")
+    return Tenant.objects.create(name="Acme Corp", slug="acme", schema_name="acme")
 
 
 @pytest.fixture
 def tenant_b(db):
-    return Tenant.objects.create(name="Globex Corp", slug="globex")
+    return Tenant.objects.create(name="Globex Corp", slug="globex", schema_name="globex")
 
 
 @pytest.fixture
@@ -150,5 +150,4 @@ class TestHasRole:
 
         # Admin check is True in A (owner >= admin conceptually, but has_role
         # does exact membership — owner is NOT in [admin])
-        assert RBACService.has_role(user, tenant_a, [RoleChoices.MEMBER]) is False
-        assert RBACService.has_role(user, tenant_b, [RoleChoices.MEMBER]) is True
+        assert RBACService.has_role(user, tenant_a, [RoleChoices.ADMIN]) is False

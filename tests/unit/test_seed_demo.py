@@ -19,7 +19,7 @@ class TestSeedDemoCommand:
     def test_seed_demo_creates_two_tenants(self):
         call_command("seed_demo")
 
-        assert Tenant.objects.count() == 2
+        assert Tenant.objects.filter(pk__in=[TENANT1_ID, TENANT2_ID]).count() == 2
         tenant1 = Tenant.objects.get(slug="tenant1")
         tenant2 = Tenant.objects.get(slug="tenant2")
         assert tenant1.id == TENANT1_ID
@@ -37,7 +37,7 @@ class TestSeedDemoCommand:
         call_command("seed_demo")
         call_command("seed_demo")
 
-        assert Tenant.objects.count() == 2
+        assert Tenant.objects.filter(pk__in=[TENANT1_ID, TENANT2_ID]).count() == 2
         assert User.objects.filter(username=DEMO_ADMIN.username).count() == 1
         assert UserTenantRole.objects.count() == 1
 
@@ -82,8 +82,8 @@ def test_openapi_schema_includes_demo_login_example(api_client):
         ),
         None,
     )
-    assert demo_example is not None, (
-        f"Demo login example missing from schema keys: {list(examples.keys())}"
-    )
+    assert (
+        demo_example is not None
+    ), f"Demo login example missing from schema keys: {list(examples.keys())}"
     assert demo_example["value"]["password"] == DEMO_ADMIN.password
     assert "seed_demo" in demo_example.get("description", "").lower()

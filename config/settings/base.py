@@ -39,6 +39,8 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "django_celery_beat",
     "django_filters",
+    "channels",
+    "waffle",
 ]
 
 LOCAL_APPS = [
@@ -56,8 +58,10 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "apps.common.middleware.request_context.RequestContextMiddleware",
+    "apps.tenants.middleware.TenantMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "waffle.middleware.WaffleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -129,6 +133,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "apps.common.throttling.AnonRateThrottle",
         "apps.common.throttling.UserRateThrottle",
+        "apps.common.throttling.LoginRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
         "anon": get_str("THROTTLE_ANON_RATE", default="20/minute"),
@@ -179,6 +184,12 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-expired-tokens-daily": {
+        "task": "apps.authentication.tasks.cleanup_expired_tokens",
+        "schedule": 60 * 60 * 24,  # every 24 hours
+    },
+}
 # SAAS-502 — default retry policy for tasks using TASK_RETRY_DECORATOR_KWARGS
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
@@ -187,6 +198,16 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": REDIS_URL,
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Django Channels — real-time WebSocket layer (Redis-backed in prod/dev)
+# ---------------------------------------------------------------------------
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [REDIS_URL]},
     }
 }
 
@@ -205,27 +226,11 @@ EMAIL_HOST_PASSWORD = get_str("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = get_bool("EMAIL_USE_TLS", default=True)
 EMAIL_USE_SSL = get_bool("EMAIL_USE_SSL", default=False)
 
-# Password-reset token lifetime (seconds).  Django default is 3 days; we use 1 h.
+# Password-reset token lifetime (seconds). Django default is 3 days; we use 1 h.
 PASSWORD_RESET_TIMEOUT = get_int("PASSWORD_RESET_TIMEOUT", default=3600)
 
 # Frontend base URL embedded in password-reset emails.
 FRONTEND_URL = get_str("FRONTEND_URL", default="http://localhost:3000")
 
-# ---------------------------------------------------------------------------
-# CORS (SAAS-701) — browser clients calling the API from a separate origin
-# ---------------------------------------------------------------------------
-_cors_origins = get_csv("CORS_ALLOWED_ORIGINS", default="")
-if _cors_origins:
-    CORS_ALLOWED_ORIGINS = _cors_origins
-else:
-    CORS_ALLOWED_ORIGINS = [FRONTEND_URL.rstrip("/")]
-
-CORS_ALLOW_CREDENTIALS = get_bool("CORS_ALLOW_CREDENTIALS", default=True)
-CORS_URLS_REGEX = r"^/api/.*$"
-
-# CSP applied in production via ContentSecurityPolicyMiddleware (see prod.py)
-CONTENT_SECURITY_POLICY = ""
-
-# SAAS-601 — structured logging (override STRUCTLOG_JSON per environment)
-STRUCTLOG_JSON = get_bool("STRUCTLOG_JSON", default=False)
+STRUCTLOG_JSON = not DEBUG
 LOGGING = get_logging_config(json_logs=STRUCTLOG_JSON)

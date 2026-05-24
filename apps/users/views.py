@@ -14,7 +14,7 @@ User = get_user_model()
 
 
 class UserCreateView(APIView):
-    """HTTP adapter — delegates user creation to ``UserService``."""
+    """HTTP adapter — delegates user creation to UserService."""
 
     permission_classes = [AllowAny]
 
@@ -45,21 +45,11 @@ class UserCreateView(APIView):
 
 class UserListView(generics.ListAPIView):
     """
-    List all users.
+    Paginated, filterable list of all users. Admin only.
 
-    Requires admin privileges (``is_staff=True``).
-
-    **Filtering** — query parameters processed by ``UserFilter``:
-
-    * ``is_active``          — ``true`` / ``false``
-    * ``date_joined_after``  — lower bound on join date (``YYYY-MM-DD``)
-    * ``date_joined_before`` — upper bound on join date (``YYYY-MM-DD``)
-
-    **Search** (``?search=``) — full-text search across
-    ``username``, ``email``, ``first_name``, ``last_name``.
-
-    **Ordering** (``?ordering=``) — ``date_joined``, ``username``, ``email``
-    (prefix ``-`` for descending).
+    Filtering  — is_active, date_joined_after, date_joined_before
+    Search     — ?search= across username, email, first_name, last_name
+    Ordering   — ?ordering= date_joined | username | email  (prefix - for desc)
     """
 
     serializer_class = UserSerializer

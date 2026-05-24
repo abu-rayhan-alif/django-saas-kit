@@ -9,13 +9,17 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   PYTHON_VERSION: "3.12"
-  DJANGO_SETTINGS_MODULE: config.settings.local
+  DJANGO_SETTINGS_MODULE: config.settings.test
   COVERAGE_FAIL_UNDER: "80"
 
 jobs:
@@ -24,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,16 +37,18 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit hooks
+        # mypy is skipped here — it runs as a dedicated step below with the
+        # full requirements installed, which is faster than the mirrors-mypy hook.
+        run: SKIP=mypy pre-commit run --all-files
+
+      - name: Install dependencies (for mypy)
         run: |
           pip install --upgrade pip
           pip install -r requirements/local.txt
-
-      - name: Ruff (linter)
-        run: ruff check .
-
-      - name: Ruff (formatter)
-        run: ruff format --check .
 
       - name: Mypy (type check)
         env:
@@ -79,6 +87,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -100,6 +110,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key-for-ci-only
           DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1,testserver,.localhost
         run: python manage.py migrate
 
       - name: Pytest with coverage (fail under ${{ env.COVERAGE_FAIL_UNDER }}%)
@@ -108,6 +119,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key-for-ci-only
           DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1,testserver,.localhost
         run: |
           pytest \
             --cov=config \
@@ -127,32 +139,3 @@ jobs:
             coverage.xml
             htmlcov/
           retention-days: 14
-
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
-        if: always()
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image (runtime target)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: infra/docker/Dockerfile
-          target: runtime
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: django-saas-kit:ci

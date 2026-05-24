@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from services.rbac import RBACService
 
-from apps.rbac.models import UserTenantRole
+from apps.rbac.models import RoleChoices, UserTenantRole
 from apps.rbac.permissions import HasRolePermission
 from apps.rbac.serializers import (
     RoleAssignSerializer,
@@ -92,31 +92,23 @@ class AssignRoleView(APIView):
 
 
 class RevokeRoleView(APIView):
-    """
-    POST /api/v1/rbac/<tenant_id>/roles/revoke/
-
-    Revoke a user's role from the tenant entirely.
-    Requires the caller to be an owner or admin of the tenant.
-
-    Request body::
-
-        { "user_id": 42 }
-    """
+    """Revoke a user's role within a tenant. Requires owner or admin."""
 
     permission_classes = [IsAuthenticated, HasRolePermission]
-    required_roles = ["owner", "admin"]
+    required_roles = [RoleChoices.OWNER, RoleChoices.ADMIN]
 
-    def post(self, request: Request, tenant_id):
-        tenant = get_object_or_404(Tenant, id=tenant_id)
+    @extend_schema(
+        tags=["RBAC"],
+        request=RoleRevokeSerializer,
+        responses={204: None},
+        summary="Revoke a role from a user within a tenant",
+    )
+    def post(self, request, tenant_id: str):
+        tenant = get_object_or_404(Tenant, pk=tenant_id)
         serializer = RoleRevokeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # validate_user_id already resolves the User object
         user = serializer.validated_data["user_id"]
-        revoked = RBACService.revoke_role(user, tenant)
-
-        if not revoked:
-            return Response(
-                {"detail": "No role assignment found for this user in the tenant."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        RBACService.revoke_role(user, tenant)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -18,8 +18,6 @@ User = get_user_model()
 
 
 class PasswordResetService:
-    # TODO: Add your business logic here
-
     """
     Stateless service for self-service password reset.
 

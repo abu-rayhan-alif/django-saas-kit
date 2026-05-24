@@ -50,9 +50,7 @@ services:
       context: .
       dockerfile: infra/docker/Dockerfile
       target: development
-    command: >
-      sh -c "python manage.py sync_beat_schedule &&
-             celery -A config beat -l info"
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/app
     env_file:

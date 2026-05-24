@@ -3,6 +3,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
@@ -27,3 +28,4 @@ repos:
           - djangorestframework>=3.15,<4
           - python-decouple>=3.8,<4
           - dj-database-url>=2.2,<3
+          - celery>=5.0

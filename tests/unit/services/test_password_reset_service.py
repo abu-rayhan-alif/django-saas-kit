@@ -7,7 +7,7 @@ EMAIL_BACKEND to locmem for the tests that need it.
 
 import pytest
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.core import mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -116,5 +116,10 @@ class TestPasswordResetConfirm:
             PasswordResetService.confirm_reset(fake_uid, "any-token", "NewPass1!")
 
     def test_weak_password_raises(self, user):
-        with pytest.raises(ValidationServiceError):
-            PasswordResetService.confirm_reset(_uid(user), _token(user), "short")
+        token_gen = PasswordResetTokenGenerator()
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_gen.make_token(user)
+        with pytest.raises(
+            ValidationServiceError, match="too short|too common|entirely numeric|similar"
+        ):
+            PasswordResetService.confirm_reset(uid, token, "abc")
