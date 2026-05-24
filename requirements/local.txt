@@ -5,7 +5,7 @@ pytest-django>=4.9,<5
 pytest-cov>=7.1.0,<8
 pytest-mock>=3.15.1,<4
 factory-boy>=3.3,<4
-ruff>=0.6,<1
+ruff>=0.15.14,<1
 mypy>=1.13,<1.20
 # django-stubs 5.x tracks Django 5.x; keep <6 until we upgrade Django to 5.2+
 django-stubs>=5.2,<6
