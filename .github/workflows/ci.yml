@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies (for mypy)
         run: |
           pip install --upgrade pip
-          pip install -r requirements/local.txt
+          pip install -r requirements/local.txt -c requirements/constraints.txt
 
       - name: Mypy (type check)
         env:
@@ -99,7 +99,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements/local.txt
+          pip install -r requirements/local.txt -c requirements/constraints.txt
 
       - name: Copy env file
         run: cp .env.example .env

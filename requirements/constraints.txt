@@ -1,0 +1,5 @@
+# Hard pins for mypy stubs (used with: pip install -r requirements/local.txt -c requirements/constraints.txt)
+# djangorestframework-stubs 3.17+ requires django-stubs>=6, which needs Django 5.2+.
+# This project uses Django<5.2 — upgrade Django and stubs together.
+django-stubs==5.2.9
+djangorestframework-stubs==3.16.9
