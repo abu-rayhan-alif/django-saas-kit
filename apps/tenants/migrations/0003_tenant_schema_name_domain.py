@@ -17,11 +17,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # 1. Add nullable schema_name (avoids default-collision on existing rows)
+        # 1. Add nullable schema_name (avoids default-collision on existing rows).
+        # db_index=False here: SlugField defaults to db_index=True which would
+        # queue a LIKE (varchar_pattern_ops) index in deferred_sql.  Step 3's
+        # AlterField(unique=True) queues the same LIKE index again, causing
+        # "relation already exists" on PostgreSQL when __exit__ flushes both.
+        # The unique constraint in step 3 provides the needed B-tree index.
         migrations.AddField(
             model_name="tenant",
             name="schema_name",
-            field=models.SlugField(max_length=100, null=True),
+            field=models.SlugField(max_length=100, null=True, db_index=False),
         ),
         # 2. Backfill from slug
         migrations.RunPython(_backfill_schema_name, migrations.RunPython.noop),
