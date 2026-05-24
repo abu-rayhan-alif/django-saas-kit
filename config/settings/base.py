@@ -232,4 +232,5 @@ PASSWORD_RESET_TIMEOUT = get_int("PASSWORD_RESET_TIMEOUT", default=3600)
 # Frontend base URL embedded in password-reset emails.
 FRONTEND_URL = get_str("FRONTEND_URL", default="http://localhost:3000")
 
-LOGGING = get_logging_config(json_logs=not DEBUG)
+STRUCTLOG_JSON = not DEBUG
+LOGGING = get_logging_config(json_logs=STRUCTLOG_JSON)
