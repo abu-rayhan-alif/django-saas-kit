@@ -1,5 +1,5 @@
 Django>=5.0,<5.2
-djangorestframework>=3.15,<4
+djangorestframework>=3.17.1,<4
 # Use python-decouple only — do NOT install the unrelated "decouple" package on PyPI
 python-decouple>=3.8,<4
 dj-database-url>=2.2,<3
