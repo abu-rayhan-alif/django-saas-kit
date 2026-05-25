@@ -4,7 +4,7 @@ from apps.billing.models import Plan, Subscription, WebhookEvent
 
 
 @admin.register(Plan)
-class PlanAdmin(admin.ModelAdmin):
+class PlanAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = ["name", "slug", "max_members", "max_storage_mb", "is_active"]
     list_filter = ["is_active"]
     search_fields = ["name", "slug", "stripe_price_id"]
@@ -12,7 +12,7 @@ class PlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = [
         "tenant",
         "plan",
@@ -27,7 +27,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 @admin.register(WebhookEvent)
-class WebhookEventAdmin(admin.ModelAdmin):
+class WebhookEventAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = ["stripe_event_id", "event_type", "processed_at"]
     list_filter = ["event_type"]
     search_fields = ["stripe_event_id"]

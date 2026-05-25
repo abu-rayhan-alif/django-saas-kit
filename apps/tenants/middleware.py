@@ -20,11 +20,15 @@ Exempt paths (health checks, admin, OpenAPI) bypass resolution and receive
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import structlog
 from django.core.cache import cache
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from services.tenant_context import clear_tenant, set_tenant_id
+
+if TYPE_CHECKING:
+    from apps.tenants.models import Tenant
 
 log = structlog.get_logger(__name__)
 
@@ -101,14 +105,14 @@ class TenantMiddleware:
         return response
 
     @staticmethod
-    def _resolve_tenant(host: str):
+    def _resolve_tenant(host: str) -> Tenant | None:
         """Resolve tenant from cache or DB. Returns None for unknown hosts."""
         from apps.tenants.models import (
             Domain,  # noqa: PLC0415 — avoids import-time app registry issue
         )
 
         key = _cache_key(host)
-        cached = cache.get(key)
+        cached: Tenant | _TenantNotFound | None = cache.get(key)
 
         if isinstance(cached, _TenantNotFound):
             return None

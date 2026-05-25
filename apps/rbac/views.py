@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import cast
 
 from django.contrib.auth.models import AbstractBaseUser
@@ -52,7 +54,7 @@ class TenantRoleListView(APIView):
             ),
         ],
     )
-    def get(self, request: Request, tenant_id):
+    def get(self, request: Request, tenant_id: str) -> Response:
         tenant = get_object_or_404(Tenant, id=tenant_id)
         roles = UserTenantRole.objects.filter(tenant=tenant).select_related("user", "tenant")
         serializer = UserTenantRoleSerializer(roles, many=True)
@@ -74,7 +76,7 @@ class AssignRoleView(APIView):
     permission_classes = [IsAuthenticated, HasRolePermission]
     required_roles = ["owner", "admin"]
 
-    def post(self, request: Request, tenant_id):
+    def post(self, request: Request, tenant_id: str) -> Response:
         tenant = get_object_or_404(Tenant, id=tenant_id)
         serializer = RoleAssignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -103,7 +105,7 @@ class RevokeRoleView(APIView):
         responses={204: None},
         summary="Revoke a role from a user within a tenant",
     )
-    def post(self, request, tenant_id: str):
+    def post(self, request: Request, tenant_id: str) -> Response:
         tenant = get_object_or_404(Tenant, pk=tenant_id)
         serializer = RoleRevokeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

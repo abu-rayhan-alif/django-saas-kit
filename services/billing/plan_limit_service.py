@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import structlog
 
 from services.exceptions import PlanLimitExceededError
+
+if TYPE_CHECKING:
+    from apps.billing.models import Plan
+    from apps.tenants.models import Tenant
 
 log = structlog.get_logger(__name__)
 
@@ -22,7 +28,7 @@ class PlanLimitService:
     """
 
     @staticmethod
-    def get_plan(tenant):
+    def get_plan(tenant: Tenant) -> Plan | None:
         """Return the Plan associated with *tenant*'s subscription, or None."""
         try:
             sub = tenant.subscription
@@ -31,14 +37,14 @@ class PlanLimitService:
             return None
 
     @staticmethod
-    def get_member_count(tenant) -> int:
+    def get_member_count(tenant: Tenant) -> int:
         """Count current members (any role) in *tenant*."""
         from apps.rbac.models import UserTenantRole  # noqa: PLC0415
 
         return UserTenantRole.objects.filter(tenant=tenant).count()
 
     @staticmethod
-    def check_member_limit(tenant) -> None:
+    def check_member_limit(tenant: Tenant) -> None:
         """
         Raise ``PlanLimitExceededError`` if adding another member would
         exceed the tenant's plan quota.

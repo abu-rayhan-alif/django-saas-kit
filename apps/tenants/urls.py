@@ -1,1 +1,3 @@
-urlpatterns: list = []
+from typing import Any
+
+urlpatterns: list[Any] = []

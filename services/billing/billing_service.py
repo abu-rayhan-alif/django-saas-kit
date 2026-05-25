@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from django.db import transaction
 from django.utils import timezone
+
+if TYPE_CHECKING:
+    from apps.billing.models import Subscription
 
 log = structlog.get_logger(__name__)
 
@@ -17,7 +21,7 @@ class BillingService:
     """Processes Stripe webhook events and updates Subscription state."""
 
     @staticmethod
-    def process_event(event_type: str, event_data: dict) -> None:
+    def process_event(event_type: str, event_data: dict[str, Any]) -> None:
         """Dispatch a Stripe event to the appropriate handler."""
         handlers = {
             "customer.subscription.created": BillingService._on_subscription_created,
@@ -38,7 +42,7 @@ class BillingService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _on_subscription_created(data: dict) -> None:
+    def _on_subscription_created(data: dict[str, Any]) -> None:
         from apps.billing.models import Subscription
 
         obj = data.get("object", {})
@@ -77,7 +81,7 @@ class BillingService:
         log.info("billing.subscription_created", tenant_id=str(sub.tenant_id), status=status)
 
     @staticmethod
-    def _on_subscription_updated(data: dict) -> None:
+    def _on_subscription_updated(data: dict[str, Any]) -> None:
         from apps.billing.models import Subscription
 
         obj = data.get("object", {})
@@ -100,7 +104,7 @@ class BillingService:
         log.info("billing.subscription_updated", tenant_id=str(sub.tenant_id), status=status)
 
     @staticmethod
-    def _on_subscription_canceled(data: dict) -> None:
+    def _on_subscription_canceled(data: dict[str, Any]) -> None:
         from apps.billing.models import Subscription
 
         obj = data.get("object", {})
@@ -130,7 +134,7 @@ class BillingService:
         log.info("billing.subscription_canceled", tenant_id=str(sub.tenant_id))
 
     @staticmethod
-    def _on_payment_succeeded(data: dict) -> None:
+    def _on_payment_succeeded(data: dict[str, Any]) -> None:
         from apps.billing.models import Subscription
 
         obj = data.get("object", {})
@@ -152,7 +156,7 @@ class BillingService:
         log.info("billing.payment_succeeded", tenant_id=str(sub.tenant_id))
 
     @staticmethod
-    def _on_payment_failed(data: dict) -> None:
+    def _on_payment_failed(data: dict[str, Any]) -> None:
         from apps.billing.models import Subscription
         from apps.billing.tasks import send_dunning_email
 
@@ -179,7 +183,7 @@ class BillingService:
         log.info("billing.payment_failed", tenant_id=tenant_id, grace_until=grace_until)
 
     @staticmethod
-    def _on_trial_ending(data: dict) -> None:
+    def _on_trial_ending(data: dict[str, Any]) -> None:
         obj = data.get("object", {})
         log.info("billing.trial_ending", stripe_sub_id=obj.get("id"))
         # TODO: send trial-ending notification email
@@ -189,7 +193,7 @@ class BillingService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _apply_period(sub, obj: dict) -> None:
+    def _apply_period(sub: Subscription, obj: dict[str, Any]) -> None:
         import datetime
 
         start_ts = obj.get("current_period_start")

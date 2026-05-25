@@ -15,9 +15,12 @@ Tenant resolution order
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
+from typing import Any, cast
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest, HttpResponse
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from services.rbac import RBACService
@@ -29,7 +32,7 @@ from apps.tenants.models import Tenant
 # ---------------------------------------------------------------------------
 
 
-def _resolve_tenant(request, kwargs: dict) -> Tenant | None:
+def _resolve_tenant(request: HttpRequest | Request, kwargs: dict[str, Any]) -> Tenant | None:
     """
     Resolve a ``Tenant`` from (in priority order):
     1. ``request.tenant`` set by TenantMiddleware (free — already in memory)
@@ -39,11 +42,11 @@ def _resolve_tenant(request, kwargs: dict) -> Tenant | None:
     Returns ``None`` if the tenant cannot be resolved.
     """
     # Reuse the tenant already resolved by middleware — avoids a redundant DB query.
-    middleware_tenant = getattr(request, "tenant", None)
+    middleware_tenant: Tenant | None = getattr(request, "tenant", None)
     if middleware_tenant is not None:
         return middleware_tenant
 
-    tenant_id = kwargs.get("tenant_id") or request.headers.get("X-Tenant-ID")
+    tenant_id: str | None = kwargs.get("tenant_id") or request.headers.get("X-Tenant-ID")
     if not tenant_id:
         return None
     try:
@@ -57,7 +60,7 @@ def _resolve_tenant(request, kwargs: dict) -> Tenant | None:
 # ---------------------------------------------------------------------------
 
 
-def require_role(roles: list[str]):
+def require_role(roles: list[str]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     View decorator that enforces one of *roles* in the resolved tenant.
 
@@ -72,13 +75,14 @@ def require_role(roles: list[str]):
     when the requirement is not met.
     """
 
-    def decorator(view_func):
+    def decorator(view_func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(view_func)
-        def wrapper(request, *args, **kwargs):
+        def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             tenant = _resolve_tenant(request, kwargs)
-            if tenant is None or not RBACService.has_role(request.user, tenant, roles):
+            user = cast(AbstractBaseUser | None, request.user)
+            if tenant is None or not RBACService.has_role(user, tenant, roles):
                 raise PermissionDenied
-            return view_func(request, *args, **kwargs)
+            return cast(HttpResponse, view_func(request, *args, **kwargs))
 
         return wrapper
 
@@ -107,13 +111,13 @@ class HasRolePermission(BasePermission):
 
     message = "You do not have the required role to perform this action."
 
-    def has_permission(self, request: Request, view) -> bool:
+    def has_permission(self, request: Request, view: Any) -> bool:
         required_roles: list[str] = getattr(view, "required_roles", [])
         if not required_roles:
             # View opted out of role enforcement
             return True
 
-        view_kwargs: dict = getattr(view, "kwargs", {}) or {}
+        view_kwargs: dict[str, Any] = getattr(view, "kwargs", {}) or {}
         tenant = _resolve_tenant(request, view_kwargs)
         if tenant is None:
             return False

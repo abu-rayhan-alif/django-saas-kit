@@ -55,11 +55,13 @@ class StripeWebhookView(APIView):
             )
 
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+            event = stripe.Webhook.construct_event(  # type: ignore[no-untyped-call]
+                payload, sig_header, webhook_secret
+            )
         except ValueError:
             log.warning("billing.webhook_invalid_payload")
             return Response({"error": "invalid_payload"}, status=status.HTTP_400_BAD_REQUEST)
-        except stripe.error.SignatureVerificationError:
+        except stripe.SignatureVerificationError:
             log.warning("billing.webhook_invalid_signature")
             return Response({"error": "invalid_signature"}, status=status.HTTP_400_BAD_REQUEST)
 
