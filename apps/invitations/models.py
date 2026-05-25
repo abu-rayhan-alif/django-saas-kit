@@ -21,6 +21,7 @@ def _default_token() -> str:
 
 def _default_expires_at():
     from datetime import timedelta
+
     return timezone.now() + timedelta(hours=_EXPIRY_HOURS)
 
 

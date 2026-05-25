@@ -20,12 +20,10 @@ Exempt paths (health checks, admin, OpenAPI) bypass resolution and receive
 from __future__ import annotations
 
 from collections.abc import Callable
-from uuid import UUID
 
 import structlog
 from django.core.cache import cache
 from django.http import HttpRequest, HttpResponse, JsonResponse
-
 from services.tenant_context import clear_tenant, set_tenant_id
 
 log = structlog.get_logger(__name__)
@@ -40,12 +38,13 @@ _EXEMPT_PREFIXES: tuple[str, ...] = (
     "/static/",
 )
 
-_TENANT_CACHE_TTL = 300   # 5 minutes
+_TENANT_CACHE_TTL = 300  # 5 minutes
 _NEGATIVE_CACHE_TTL = 60  # 1 minute for "not found" entries
 
 
 class _TenantNotFound:
     """Typed sentinel stored in cache when a domain has no matching tenant."""
+
     __slots__ = ()
 
 

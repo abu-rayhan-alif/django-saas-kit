@@ -135,9 +135,9 @@ if USE_S3:
     # Real S3:      "<bucket>.s3.amazonaws.com"  (leave empty to auto-generate)
     AWS_S3_CUSTOM_DOMAIN = get_str("AWS_S3_CUSTOM_DOMAIN", default="")
 
-    AWS_DEFAULT_ACL = "private"           # never expose files publicly by default
-    AWS_S3_FILE_OVERWRITE = False         # keep original filename on collision
-    AWS_QUERYSTRING_AUTH = True           # signed URLs (expires in 1 h)
+    AWS_DEFAULT_ACL = "private"  # never expose files publicly by default
+    AWS_S3_FILE_OVERWRITE = False  # keep original filename on collision
+    AWS_QUERYSTRING_AUTH = True  # signed URLs (expires in 1 h)
     AWS_QUERYSTRING_EXPIRE = 3600
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 

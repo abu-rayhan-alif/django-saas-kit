@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import structlog
+
 from celery import shared_task
 
 log = structlog.get_logger(__name__)
@@ -22,7 +23,7 @@ def handle_stripe_event(self, event_id: str, event_type: str, event_data: dict) 
         BillingService.process_event(event_type, event_data)
     except Exception as exc:
         log.exception("billing.task_failed", event_id=event_id, event_type=event_type)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     return f"stripe_event:processed:{event_id}"
 
@@ -64,6 +65,6 @@ def send_dunning_email(self, tenant_id: str) -> str:
             fail_silently=False,
         )
     except Exception as exc:
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     return f"dunning:sent:{tenant_id}"

@@ -53,7 +53,11 @@ class AuditService:
             actor_email: str = ""
 
             if request is not None:
-                if resolved_actor is None and hasattr(request, "user") and request.user.is_authenticated:
+                if (
+                    resolved_actor is None
+                    and hasattr(request, "user")
+                    and request.user.is_authenticated
+                ):
                     resolved_actor = request.user
                 ip_address = _get_client_ip(request)
                 user_agent = request.META.get("HTTP_USER_AGENT", "")

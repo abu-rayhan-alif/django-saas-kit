@@ -107,7 +107,7 @@ def test_user_list_returns_only_own_tenant_users(tenant_a, tenant_b, admin_user_
 
 def test_user_list_empty_when_no_tenant_members(tenant_a):
     """Tenant with no role assignments returns empty list."""
-    admin = User.objects.create_superuser(
+    User.objects.create_superuser(
         username="lone_admin", email="lone@example.com", password="StrongPass123!"
     )
     # Admin has no UserTenantRole for tenant_a

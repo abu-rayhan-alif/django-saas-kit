@@ -35,4 +35,5 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 class InvitationAcceptSerializer(serializers.Serializer):
     """Empty body — the token in the URL is all that's needed."""
+
     pass

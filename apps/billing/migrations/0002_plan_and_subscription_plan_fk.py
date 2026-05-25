@@ -11,7 +11,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Plan",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("slug", models.SlugField(max_length=50, unique=True)),
                 ("name", models.CharField(max_length=100)),
                 ("stripe_price_id", models.CharField(blank=True, default="", max_length=255)),

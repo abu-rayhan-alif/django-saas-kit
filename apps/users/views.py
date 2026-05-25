@@ -74,8 +74,4 @@ class UserListView(generics.ListAPIView):
         tenant = getattr(self.request, "tenant", None)
         if tenant is None:
             return User.objects.none()
-        return (
-            User.objects.filter(tenant_roles__tenant=tenant)
-            .distinct()
-            .order_by("-date_joined")
-        )
+        return User.objects.filter(tenant_roles__tenant=tenant).distinct().order_by("-date_joined")

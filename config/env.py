@@ -71,7 +71,7 @@ def validate_required_settings() -> None:
         if len(secret_key) < _MIN_SECRET_KEY_LENGTH:
             raise ValueError(
                 f"SECRET_KEY must be at least {_MIN_SECRET_KEY_LENGTH} characters. "
-                "Generate one with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\""
+                'Generate one with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
             )
     except UndefinedValueError:
         pass  # already caught above

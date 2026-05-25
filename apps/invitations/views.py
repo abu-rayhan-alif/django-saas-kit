@@ -7,13 +7,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from apps.invitations.serializers import (
-    InvitationAcceptSerializer,
-    InvitationCreateSerializer,
-    InvitationSerializer,
-)
-from apps.rbac.permissions import HasRolePermission
 from services.exceptions import (
     ConflictServiceError,
     NotFoundServiceError,
@@ -21,6 +14,13 @@ from services.exceptions import (
     ValidationServiceError,
 )
 from services.invitations import InvitationService
+
+from apps.invitations.serializers import (
+    InvitationAcceptSerializer,
+    InvitationCreateSerializer,
+    InvitationSerializer,
+)
+from apps.rbac.permissions import HasRolePermission
 
 
 class TenantInvitationListCreateView(APIView):
@@ -40,7 +40,9 @@ class TenantInvitationListCreateView(APIView):
     def get(self, request):
         tenant = getattr(request, "tenant", None)
         if tenant is None:
-            return Response({"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST
+            )
         invitations = InvitationService.list_pending(tenant)
         return Response(InvitationSerializer(invitations, many=True).data)
 
@@ -53,7 +55,9 @@ class TenantInvitationListCreateView(APIView):
     def post(self, request):
         tenant = getattr(request, "tenant", None)
         if tenant is None:
-            return Response({"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         serializer = InvitationCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -150,7 +154,9 @@ class InvitationRevokeView(APIView):
     def delete(self, request, invitation_id: str):
         tenant = getattr(request, "tenant", None)
         if tenant is None:
-            return Response({"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Tenant context required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             InvitationService.revoke_invitation(

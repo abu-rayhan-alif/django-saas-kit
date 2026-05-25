@@ -46,7 +46,9 @@ class RBACService:
             defaults={"role": role, "assigned_by_id": assigned_by.pk if assigned_by else None},
         )
         from apps.audit.models import AuditLog  # noqa: PLC0415
+
         from services.audit import AuditService  # noqa: PLC0415
+
         AuditService.log(
             AuditLog.Action.ROLE_ASSIGNED,
             tenant=tenant,
@@ -67,7 +69,9 @@ class RBACService:
         deleted, _ = UserTenantRole.objects.filter(user_id=user.pk, tenant=tenant).delete()
         if deleted:
             from apps.audit.models import AuditLog  # noqa: PLC0415
+
             from services.audit import AuditService  # noqa: PLC0415
+
             AuditService.log(
                 AuditLog.Action.ROLE_REVOKED,
                 tenant=tenant,

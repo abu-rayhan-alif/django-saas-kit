@@ -34,6 +34,7 @@ class PlanLimitService:
     def get_member_count(tenant) -> int:
         """Count current members (any role) in *tenant*."""
         from apps.rbac.models import UserTenantRole  # noqa: PLC0415
+
         return UserTenantRole.objects.filter(tenant=tenant).count()
 
     @staticmethod

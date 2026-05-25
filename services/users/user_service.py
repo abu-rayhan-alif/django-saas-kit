@@ -78,8 +78,8 @@ class UserService:
                 # Register on_commit INSIDE the atomic block so it fires only after
                 # the transaction successfully commits, never on rollback.
                 transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
-        except IntegrityError:
+        except IntegrityError as exc:
             # Username or email already taken — generic message prevents enumeration.
-            raise ConflictServiceError("An account with those credentials already exists.")
+            raise ConflictServiceError("An account with those credentials already exists.") from exc
 
         return user

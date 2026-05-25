@@ -8,24 +8,25 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from services.audit import AuditService
 from services.auth import PasswordResetService
 from services.exceptions import ConflictServiceError, ValidationServiceError
 from services.users import CreateUserInput, UserService
 
+from apps.audit.models import AuditLog
 from apps.authentication.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
 )
-from apps.audit.models import AuditLog
 from apps.common.throttling import PasswordResetRateThrottle, RegisterRateThrottle
 from apps.users.serializers import UserSerializer
-from services.audit import AuditService
 
 
 def _demo_examples(*examples: OpenApiExample) -> list[OpenApiExample]:
     """Return demo examples only in DEBUG mode to avoid leaking credentials in production."""
     return list(examples) if getattr(settings, "DEBUG", False) else []
+
 
 # ---------------------------------------------------------------------------
 # Registration

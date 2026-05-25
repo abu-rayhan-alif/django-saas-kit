@@ -54,6 +54,6 @@ def send_password_reset_email(
             html_message=html_body,
         )
     except Exception as exc:
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     return f"password_reset_email:sent:{recipient_email}"

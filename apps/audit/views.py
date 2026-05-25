@@ -33,7 +33,9 @@ class AuditLogListView(ListAPIView):
         summary="List audit log entries for the current tenant",
         parameters=[
             OpenApiParameter("action", description="Filter by action code", required=False),
-            OpenApiParameter("actor", description="Filter by actor email (partial match)", required=False),
+            OpenApiParameter(
+                "actor", description="Filter by actor email (partial match)", required=False
+            ),
         ],
         responses={200: AuditLogSerializer(many=True)},
     )

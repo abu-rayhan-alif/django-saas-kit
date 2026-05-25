@@ -50,7 +50,9 @@ class StripeWebhookView(APIView):
 
         if not webhook_secret:
             log.error("billing.webhook_secret_missing")
-            return Response({"error": "misconfigured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "misconfigured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         try:
             event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)

@@ -47,22 +47,26 @@ class BillingService:
         status: str = obj.get("status", "active")
 
         with transaction.atomic():
-            sub = Subscription.objects.select_for_update().filter(
-                stripe_customer_id=customer_id
-            ).first()
+            sub = (
+                Subscription.objects.select_for_update()
+                .filter(stripe_customer_id=customer_id)
+                .first()
+            )
             if sub is None:
                 log.warning("billing.subscription_created_no_tenant", customer_id=customer_id)
                 return
 
             sub.stripe_subscription_id = stripe_sub_id
             sub.status = status
-            sub.stripe_price_id = (obj.get("items", {}).get("data") or [{}])[0].get(
-                "price", {}
-            ).get("id", "")
+            sub.stripe_price_id = (
+                (obj.get("items", {}).get("data") or [{}])[0].get("price", {}).get("id", "")
+            )
             BillingService._apply_period(sub, obj)
             sub.save()
         from apps.audit.models import AuditLog  # noqa: PLC0415
+
         from services.audit import AuditService  # noqa: PLC0415
+
         AuditService.log(
             AuditLog.Action.SUBSCRIPTION_CREATED,
             tenant=sub.tenant,
@@ -114,7 +118,9 @@ class BillingService:
             sub.grace_period_end = None
             sub.save(update_fields=["status", "grace_period_end", "updated_at"])
         from apps.audit.models import AuditLog  # noqa: PLC0415
+
         from services.audit import AuditService  # noqa: PLC0415
+
         AuditService.log(
             AuditLog.Action.SUBSCRIPTION_CANCELED,
             tenant=sub.tenant,
@@ -191,14 +197,8 @@ class BillingService:
         trial_end_ts = obj.get("trial_end")
 
         if start_ts:
-            sub.current_period_start = datetime.datetime.fromtimestamp(
-                start_ts, tz=datetime.timezone.utc
-            )
+            sub.current_period_start = datetime.datetime.fromtimestamp(start_ts, tz=datetime.UTC)
         if end_ts:
-            sub.current_period_end = datetime.datetime.fromtimestamp(
-                end_ts, tz=datetime.timezone.utc
-            )
+            sub.current_period_end = datetime.datetime.fromtimestamp(end_ts, tz=datetime.UTC)
         if trial_end_ts:
-            sub.trial_end = datetime.datetime.fromtimestamp(
-                trial_end_ts, tz=datetime.timezone.utc
-            )
+            sub.trial_end = datetime.datetime.fromtimestamp(trial_end_ts, tz=datetime.UTC)

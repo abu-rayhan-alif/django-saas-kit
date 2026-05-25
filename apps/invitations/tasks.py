@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import structlog
-from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
+
+from celery import shared_task
 
 log = structlog.get_logger(__name__)
 
@@ -44,4 +45,4 @@ def send_invitation_email(
         log.info("invitation.email_sent", recipient=recipient_email, tenant=tenant_name)
     except Exception as exc:  # noqa: BLE001
         log.warning("invitation.email_failed", recipient=recipient_email, exc=str(exc))
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
