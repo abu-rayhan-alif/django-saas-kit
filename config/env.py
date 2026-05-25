@@ -66,15 +66,19 @@ def validate_required_settings() -> None:
             f"Missing required environment variable(s): {', '.join(missing)}. "
             "Copy .env.example to .env and set all required values."
         )
-    try:
-        secret_key = str(_config("SECRET_KEY")).strip()
-        if len(secret_key) < _MIN_SECRET_KEY_LENGTH:
-            raise ValueError(
-                f"SECRET_KEY must be at least {_MIN_SECRET_KEY_LENGTH} characters. "
-                'Generate one with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
-            )
-    except UndefinedValueError:
-        pass  # already caught above
+    # Enforce key length only in production (DEBUG=False).
+    # mypy, test, and local dev settings set DEBUG=True and use short dummy keys.
+    debug = _config("DEBUG", default=True, cast=bool)
+    if not debug:
+        try:
+            secret_key = str(_config("SECRET_KEY")).strip()
+            if len(secret_key) < _MIN_SECRET_KEY_LENGTH:
+                raise ValueError(
+                    f"SECRET_KEY must be at least {_MIN_SECRET_KEY_LENGTH} characters. "
+                    'Generate one with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
+                )
+        except UndefinedValueError:
+            pass  # already caught above
 
 
 __all__ = [
