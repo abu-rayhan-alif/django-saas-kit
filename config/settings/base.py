@@ -181,6 +181,8 @@ REST_FRAMEWORK = {
         "anon": get_str("THROTTLE_ANON_RATE", default="20/minute"),
         "user": get_str("THROTTLE_USER_RATE", default="100/minute"),
         "login": get_str("THROTTLE_LOGIN_RATE", default="5/minute"),
+        "register": get_str("THROTTLE_REGISTER_RATE", default="3/hour"),
+        "password_reset": get_str("THROTTLE_PASSWORD_RESET_RATE", default="5/hour"),
     },
     "EXCEPTION_HANDLER": "apps.common.exceptions.saas_exception_handler",
 }

@@ -31,10 +31,18 @@ from apps.tenants.models import Tenant
 
 def _resolve_tenant(request, kwargs: dict) -> Tenant | None:
     """
-    Resolve a ``Tenant`` from URL kwargs or the ``X-Tenant-ID`` header.
+    Resolve a ``Tenant`` from (in priority order):
+    1. ``request.tenant`` set by TenantMiddleware (free — already in memory)
+    2. URL kwargs ``tenant_id``
+    3. ``X-Tenant-ID`` request header
 
-    Returns ``None`` if the tenant cannot be found or the ID is malformed.
+    Returns ``None`` if the tenant cannot be resolved.
     """
+    # Reuse the tenant already resolved by middleware — avoids a redundant DB query.
+    middleware_tenant = getattr(request, "tenant", None)
+    if middleware_tenant is not None:
+        return middleware_tenant
+
     tenant_id = kwargs.get("tenant_id") or request.headers.get("X-Tenant-ID")
     if not tenant_id:
         return None

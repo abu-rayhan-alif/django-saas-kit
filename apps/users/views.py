@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from services.exceptions import ConflictServiceError, ValidationServiceError
 from services.users import CreateUserInput, UserService
 
+from apps.rbac.permissions import HasRolePermission
 from apps.users.filters import UserFilter
 from apps.users.serializers import UserCreateSerializer, UserSerializer
 
@@ -53,7 +54,8 @@ class UserListView(generics.ListAPIView):
     """
 
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    required_roles = ["owner", "admin"]
     filterset_class = UserFilter
     search_fields = ["username", "email", "first_name", "last_name"]
     ordering_fields = ["date_joined", "username", "email"]

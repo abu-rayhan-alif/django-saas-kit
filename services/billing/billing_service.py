@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 import structlog
+from django.db import transaction
 from django.utils import timezone
 
 log = structlog.get_logger(__name__)
@@ -45,18 +46,21 @@ class BillingService:
         customer_id: str = obj.get("customer", "")
         status: str = obj.get("status", "active")
 
-        sub = Subscription.objects.filter(stripe_customer_id=customer_id).first()
-        if sub is None:
-            log.warning("billing.subscription_created_no_tenant", customer_id=customer_id)
-            return
+        with transaction.atomic():
+            sub = Subscription.objects.select_for_update().filter(
+                stripe_customer_id=customer_id
+            ).first()
+            if sub is None:
+                log.warning("billing.subscription_created_no_tenant", customer_id=customer_id)
+                return
 
-        sub.stripe_subscription_id = stripe_sub_id
-        sub.status = status
-        sub.stripe_price_id = (obj.get("items", {}).get("data") or [{}])[0].get(
-            "price", {}
-        ).get("id", "")
-        BillingService._apply_period(sub, obj)
-        sub.save()
+            sub.stripe_subscription_id = stripe_sub_id
+            sub.status = status
+            sub.stripe_price_id = (obj.get("items", {}).get("data") or [{}])[0].get(
+                "price", {}
+            ).get("id", "")
+            BillingService._apply_period(sub, obj)
+            sub.save()
         log.info("billing.subscription_created", tenant_id=str(sub.tenant_id), status=status)
 
     @staticmethod
@@ -67,16 +71,19 @@ class BillingService:
         stripe_sub_id: str = obj.get("id", "")
         status: str = obj.get("status", "active")
 
-        try:
-            sub = Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
-        except Subscription.DoesNotExist:
-            log.warning("billing.subscription_not_found", stripe_sub_id=stripe_sub_id)
-            return
+        with transaction.atomic():
+            try:
+                sub = Subscription.objects.select_for_update().get(
+                    stripe_subscription_id=stripe_sub_id
+                )
+            except Subscription.DoesNotExist:
+                log.warning("billing.subscription_not_found", stripe_sub_id=stripe_sub_id)
+                return
 
-        sub.status = status
-        sub.cancel_at_period_end = obj.get("cancel_at_period_end", False)
-        BillingService._apply_period(sub, obj)
-        sub.save()
+            sub.status = status
+            sub.cancel_at_period_end = obj.get("cancel_at_period_end", False)
+            BillingService._apply_period(sub, obj)
+            sub.save()
         log.info("billing.subscription_updated", tenant_id=str(sub.tenant_id), status=status)
 
     @staticmethod
@@ -86,14 +93,17 @@ class BillingService:
         obj = data.get("object", {})
         stripe_sub_id: str = obj.get("id", "")
 
-        try:
-            sub = Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
-        except Subscription.DoesNotExist:
-            return
+        with transaction.atomic():
+            try:
+                sub = Subscription.objects.select_for_update().get(
+                    stripe_subscription_id=stripe_sub_id
+                )
+            except Subscription.DoesNotExist:
+                return
 
-        sub.status = Subscription.Status.CANCELED
-        sub.grace_period_end = None
-        sub.save(update_fields=["status", "grace_period_end", "updated_at"])
+            sub.status = Subscription.Status.CANCELED
+            sub.grace_period_end = None
+            sub.save(update_fields=["status", "grace_period_end", "updated_at"])
         log.info("billing.subscription_canceled", tenant_id=str(sub.tenant_id))
 
     @staticmethod
@@ -105,14 +115,17 @@ class BillingService:
         if not stripe_sub_id:
             return
 
-        try:
-            sub = Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
-        except Subscription.DoesNotExist:
-            return
+        with transaction.atomic():
+            try:
+                sub = Subscription.objects.select_for_update().get(
+                    stripe_subscription_id=stripe_sub_id
+                )
+            except Subscription.DoesNotExist:
+                return
 
-        sub.status = Subscription.Status.ACTIVE
-        sub.grace_period_end = None
-        sub.save(update_fields=["status", "grace_period_end", "updated_at"])
+            sub.status = Subscription.Status.ACTIVE
+            sub.grace_period_end = None
+            sub.save(update_fields=["status", "grace_period_end", "updated_at"])
         log.info("billing.payment_succeeded", tenant_id=str(sub.tenant_id))
 
     @staticmethod
@@ -125,21 +138,22 @@ class BillingService:
         if not stripe_sub_id:
             return
 
-        try:
-            sub = Subscription.objects.get(stripe_subscription_id=stripe_sub_id)
-        except Subscription.DoesNotExist:
-            return
+        with transaction.atomic():
+            try:
+                sub = Subscription.objects.select_for_update().get(
+                    stripe_subscription_id=stripe_sub_id
+                )
+            except Subscription.DoesNotExist:
+                return
 
-        sub.status = Subscription.Status.PAST_DUE
-        sub.grace_period_end = timezone.now() + timedelta(days=_GRACE_PERIOD_DAYS)
-        sub.save(update_fields=["status", "grace_period_end", "updated_at"])
+            sub.status = Subscription.Status.PAST_DUE
+            sub.grace_period_end = timezone.now() + timedelta(days=_GRACE_PERIOD_DAYS)
+            sub.save(update_fields=["status", "grace_period_end", "updated_at"])
+            tenant_id = str(sub.tenant_id)
+            grace_until = sub.grace_period_end.isoformat()
 
-        send_dunning_email.delay(str(sub.tenant_id))
-        log.info(
-            "billing.payment_failed",
-            tenant_id=str(sub.tenant_id),
-            grace_until=sub.grace_period_end.isoformat(),
-        )
+        send_dunning_email.delay(tenant_id)
+        log.info("billing.payment_failed", tenant_id=tenant_id, grace_until=grace_until)
 
     @staticmethod
     def _on_trial_ending(data: dict) -> None:

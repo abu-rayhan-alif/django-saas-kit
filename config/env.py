@@ -48,6 +48,9 @@ def get_database_url_config() -> dict[str, Any]:
     return cast(dict[str, Any], dj_database_url.parse(url, conn_max_age=600))
 
 
+_MIN_SECRET_KEY_LENGTH = 50
+
+
 def validate_required_settings() -> None:
     """Eagerly resolve required env vars so startup fails fast."""
     missing: list[str] = []
@@ -63,6 +66,15 @@ def validate_required_settings() -> None:
             f"Missing required environment variable(s): {', '.join(missing)}. "
             "Copy .env.example to .env and set all required values."
         )
+    try:
+        secret_key = str(_config("SECRET_KEY")).strip()
+        if len(secret_key) < _MIN_SECRET_KEY_LENGTH:
+            raise ValueError(
+                f"SECRET_KEY must be at least {_MIN_SECRET_KEY_LENGTH} characters. "
+                "Generate one with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\""
+            )
+    except UndefinedValueError:
+        pass  # already caught above
 
 
 __all__ = [

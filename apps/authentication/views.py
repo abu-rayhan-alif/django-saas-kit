@@ -1,5 +1,6 @@
 """Authentication HTTP views — thin adapters over service layer."""
 
+from django.conf import settings
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from examples.demo_config import DEMO_ADMIN
 from rest_framework import status
@@ -16,7 +17,13 @@ from apps.authentication.serializers import (
     PasswordResetRequestSerializer,
     RegisterSerializer,
 )
+from apps.common.throttling import PasswordResetRateThrottle, RegisterRateThrottle
 from apps.users.serializers import UserSerializer
+
+
+def _demo_examples(*examples: OpenApiExample) -> list[OpenApiExample]:
+    """Return demo examples only in DEBUG mode to avoid leaking credentials in production."""
+    return list(examples) if getattr(settings, "DEBUG", False) else []
 
 # ---------------------------------------------------------------------------
 # Registration
@@ -32,6 +39,8 @@ class RegisterView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterRateThrottle]
+    throttle_scope = "register"
 
     @extend_schema(
         tags=["Auth"],
@@ -42,7 +51,7 @@ class RegisterView(APIView):
             409: OpenApiResponse(description="Username or email already taken"),
         },
         summary="Register a new user account",
-        examples=[
+        examples=_demo_examples(
             OpenApiExample(
                 "Register (non-demo)",
                 value={
@@ -64,7 +73,7 @@ class RegisterView(APIView):
                 },
                 request_only=True,
             ),
-        ],
+        ),
     )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -99,6 +108,8 @@ class PasswordResetRequestView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetRateThrottle]
+    throttle_scope = "password_reset"
 
     @extend_schema(
         tags=["Auth"],
@@ -161,7 +172,7 @@ class PasswordResetConfirmView(APIView):
 @extend_schema(
     tags=["Auth"],
     summary="Obtain JWT access + refresh token pair",
-    examples=[
+    examples=_demo_examples(
         OpenApiExample(
             "Demo admin login",
             description="Created by seed_demo. Use this to explore the API.",
@@ -171,7 +182,7 @@ class PasswordResetConfirmView(APIView):
             },
             request_only=True,
         ),
-    ],
+    ),
 )
 class ThrottledTokenObtainPairView(TokenObtainPairView):
     """Token endpoint with login-scoped rate limiting (5/minute by default)."""

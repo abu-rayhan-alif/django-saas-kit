@@ -67,16 +67,15 @@ class StripeWebhookView(APIView):
         if event_type not in HANDLED_EVENTS:
             return Response({"status": "ignored", "type": event_type})
 
-        # Idempotency guard — duplicate delivery is normal for Stripe
-        if WebhookEvent.objects.filter(stripe_event_id=event_id).exists():
+        # Idempotency guard — duplicate delivery is normal for Stripe.
+        # get_or_create is atomic: concurrent deliveries can't both insert.
+        _, created = WebhookEvent.objects.get_or_create(
+            stripe_event_id=event_id,
+            defaults={"event_type": event_type, "payload": event["data"]},
+        )
+        if not created:
             log.info("billing.webhook_duplicate", event_id=event_id)
             return Response({"status": "duplicate"})
-
-        WebhookEvent.objects.create(
-            stripe_event_id=event_id,
-            event_type=event_type,
-            payload=event["data"],
-        )
 
         handle_stripe_event.delay(event_id, event_type, dict(event["data"]))
         log.info("billing.webhook_queued", event_id=event_id, event_type=event_type)

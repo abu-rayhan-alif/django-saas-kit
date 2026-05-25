@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from services.exceptions import ConflictServiceError, ValidationServiceError
 
@@ -59,28 +59,27 @@ class UserService:
         if not data.password:
             raise ValidationServiceError("Password is required.")
 
-        if User.objects.filter(username=username).exists():
-            raise ConflictServiceError(f"Username '{username}' is already taken.")
-        if User.objects.filter(email=email).exists():
-            raise ConflictServiceError(f"Email '{email}' is already registered.")
-
         try:
             validate_password(data.password, user=User(username=username, email=email))
         except DjangoValidationError as exc:
             raise ValidationServiceError("; ".join(exc.messages)) from exc
 
-        with transaction.atomic():
-            user = User(
-                username=username,
-                email=email,
-                first_name=data.first_name.strip(),
-                last_name=data.last_name.strip(),
-            )
-            user.set_password(data.password)
-            user.full_clean()
-            user.save()
-            # Register on_commit INSIDE the atomic block so it fires only after
-            # the transaction successfully commits, never on rollback.
-            transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
+        try:
+            with transaction.atomic():
+                user = User(
+                    username=username,
+                    email=email,
+                    first_name=data.first_name.strip(),
+                    last_name=data.last_name.strip(),
+                )
+                user.set_password(data.password)
+                user.full_clean()
+                user.save()
+                # Register on_commit INSIDE the atomic block so it fires only after
+                # the transaction successfully commits, never on rollback.
+                transaction.on_commit(partial(_enqueue_welcome_email, cast(int, user.pk)))
+        except IntegrityError:
+            # Username or email already taken — generic message prevents enumeration.
+            raise ConflictServiceError("An account with those credentials already exists.")
 
         return user

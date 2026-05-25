@@ -42,7 +42,14 @@ _EXEMPT_PREFIXES: tuple[str, ...] = (
 
 _TENANT_CACHE_TTL = 300   # 5 minutes
 _NEGATIVE_CACHE_TTL = 60  # 1 minute for "not found" entries
-_CACHE_SENTINEL = "__not_found__"
+
+
+class _TenantNotFound:
+    """Typed sentinel stored in cache when a domain has no matching tenant."""
+    __slots__ = ()
+
+
+_CACHE_SENTINEL = _TenantNotFound()
 
 
 def _cache_key(host: str) -> str:
@@ -104,7 +111,7 @@ class TenantMiddleware:
         key = _cache_key(host)
         cached = cache.get(key)
 
-        if cached is _CACHE_SENTINEL or cached == _CACHE_SENTINEL:
+        if isinstance(cached, _TenantNotFound):
             return None
 
         if cached is not None:
