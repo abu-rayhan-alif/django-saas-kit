@@ -7,6 +7,12 @@ Docker stack).  In CI, DATABASE_URL is injected as a shell env var which
 overrides the .env file, so CI always uses real PostgreSQL.
 """
 
+# Set DEBUG=True as the very first assignment so that if Django's Settings
+# object reads this partially-imported module (during a transitive import from
+# local.py → apps.common.logging_config), it still picks up DEBUG=True rather
+# than falling back to global_settings.DEBUG=False.
+DEBUG = True
+
 import os
 import tempfile
 from pathlib import Path
@@ -14,6 +20,9 @@ from pathlib import Path
 from config.env import get_database_url_config
 
 from .local import *  # noqa: F403
+
+# Re-affirm after the star import (belt-and-suspenders).
+DEBUG = True
 
 # ---------------------------------------------------------------------------
 # Database — PostgreSQL in CI when DATABASE_URL is set; else SQLite offline

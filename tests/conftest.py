@@ -26,8 +26,23 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def ensure_testserver_domain(db):
-    """Map Django test client host to a tenant so /api/v1/* requests pass TenantMiddleware."""
+    """Map Django test client host to a tenant so /api/v1/* requests pass TenantMiddleware.
+
+    Also wires a post_save signal so every User created during the test is given
+    a role in the test tenant.  Staff/superusers get ADMIN; regular users get MEMBER.
+    This lets endpoints that scope their queryset by request.tenant (e.g. UserListView)
+    return results in the default testserver environment without each test needing to
+    set up roles manually.  The signal is suppressed when tests.suppress_auto_tenant.active
+    is True (set by the services conftest) or when DemoSeedService.seed() is running.
+    Domain-specific tests (alpha.localhost, beta.localhost) are unaffected because
+    they query against their own tenant, not the test tenant.
+    """
+    from django.contrib.auth import get_user_model
+    from django.db.models.signals import post_save
+
+    from apps.rbac.models import RoleChoices, UserTenantRole
     from apps.tenants.models import Domain, Tenant
+    from tests import suppress_auto_tenant as _suppress
 
     tenant, _ = Tenant.objects.get_or_create(
         slug="test",
@@ -38,6 +53,23 @@ def ensure_testserver_domain(db):
         domain="testserver",
         defaults={"is_primary": True},
     )
+
+    User = get_user_model()
+
+    def _assign_to_test_tenant(sender, instance, created, **kwargs):
+        from services.demo.seed_service import _seeding  # noqa: PLC0415
+
+        if created and not getattr(_suppress, "active", False) and not getattr(_seeding, "active", False):
+            role = RoleChoices.ADMIN if (instance.is_staff or instance.is_superuser) else RoleChoices.MEMBER
+            UserTenantRole.objects.get_or_create(
+                user=instance,
+                tenant=tenant,
+                defaults={"role": role},
+            )
+
+    post_save.connect(_assign_to_test_tenant, sender=User, weak=False)
+    yield
+    post_save.disconnect(_assign_to_test_tenant, sender=User)
 
 
 @pytest.fixture

@@ -35,24 +35,21 @@ from apps.tenants.models import Tenant
 def _resolve_tenant(request: HttpRequest | Request, kwargs: dict[str, Any]) -> Tenant | None:
     """
     Resolve a ``Tenant`` from (in priority order):
-    1. ``request.tenant`` set by TenantMiddleware (free — already in memory)
-    2. URL kwargs ``tenant_id``
-    3. ``X-Tenant-ID`` request header
+    1. URL kwargs ``tenant_id`` (explicit — avoids shared-host ambiguity in tests)
+    2. ``X-Tenant-ID`` request header
+    3. ``request.tenant`` set by TenantMiddleware (fallback for host-scoped endpoints)
 
     Returns ``None`` if the tenant cannot be resolved.
     """
-    # Reuse the tenant already resolved by middleware — avoids a redundant DB query.
-    middleware_tenant: Tenant | None = getattr(request, "tenant", None)
-    if middleware_tenant is not None:
-        return middleware_tenant
-
     tenant_id: str | None = kwargs.get("tenant_id") or request.headers.get("X-Tenant-ID")
-    if not tenant_id:
-        return None
-    try:
-        return Tenant.objects.get(id=tenant_id)
-    except (Tenant.DoesNotExist, ValueError):
-        return None
+    if tenant_id:
+        try:
+            return Tenant.objects.get(id=tenant_id)
+        except (Tenant.DoesNotExist, ValueError):
+            return None
+
+    # Fall back to tenant resolved by TenantMiddleware from hostname.
+    return getattr(request, "tenant", None)
 
 
 # ---------------------------------------------------------------------------

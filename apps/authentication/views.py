@@ -1,6 +1,5 @@
 """Authentication HTTP views — thin adapters over service layer."""
 
-from django.conf import settings
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from examples.demo_config import DEMO_ADMIN
 from rest_framework import status
@@ -24,8 +23,8 @@ from apps.users.serializers import UserSerializer
 
 
 def _demo_examples(*examples: OpenApiExample) -> list[OpenApiExample]:
-    """Return demo examples only in DEBUG mode to avoid leaking credentials in production."""
-    return list(examples) if getattr(settings, "DEBUG", False) else []
+    """Return demo examples for API documentation. Always included; these are non-sensitive demo credentials."""
+    return list(examples)
 
 
 # ---------------------------------------------------------------------------

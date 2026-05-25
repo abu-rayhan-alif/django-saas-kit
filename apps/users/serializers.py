@@ -14,6 +14,7 @@ class UserCreateSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     display_name = serializers.SerializerMethodField()
 
     class Meta:

@@ -64,6 +64,13 @@ class UserService:
         except DjangoValidationError as exc:
             raise ValidationServiceError("; ".join(exc.messages)) from exc
 
+        # Pre-check uniqueness: full_clean() raises DjangoValidationError (not IntegrityError)
+        # for duplicate usernames, and AbstractUser has no DB-level email unique constraint.
+        if User.objects.filter(username=username).exists():
+            raise ConflictServiceError("An account with that username already exists.")
+        if User.objects.filter(email=email).exists():
+            raise ConflictServiceError("An account with that email already exists.")
+
         try:
             with transaction.atomic():
                 user = User(
