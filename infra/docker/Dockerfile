@@ -51,7 +51,32 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+CMD ["sh", "-c", "gunicorn config.wsgi:application \
+  --bind 0.0.0.0:8000 \
+  --workers ${GUNICORN_WORKERS:-4} \
+  --worker-class ${GUNICORN_WORKER_CLASS:-gthread} \
+  --threads ${GUNICORN_THREADS:-2} \
+  --timeout ${GUNICORN_TIMEOUT:-120} \
+  --graceful-timeout 30 \
+  --max-requests 1000 \
+  --max-requests-jitter 100 \
+  --access-logfile - \
+  --error-logfile -"]
+
+# ── Celery worker ─────────────────────────────────────────────────────────────
+FROM runtime AS celery-worker
+
+CMD ["sh", "-c", "celery -A config worker \
+  --loglevel=info \
+  --concurrency=${CELERY_CONCURRENCY:-4} \
+  --max-tasks-per-child=1000"]
+
+# ── Celery beat scheduler ─────────────────────────────────────────────────────
+FROM runtime AS celery-beat
+
+CMD ["celery", "-A", "config", "beat", \
+     "--loglevel=info", \
+     "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
 
 # ── Development: includes dev server command ──────────────────────────────────
 FROM runtime AS development

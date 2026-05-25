@@ -69,4 +69,11 @@ class UserListView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return User.objects.all().order_by("-date_joined")
+        tenant = getattr(self.request, "tenant", None)
+        if tenant is None:
+            return User.objects.none()
+        return (
+            User.objects.filter(tenant_roles__tenant=tenant)
+            .distinct()
+            .order_by("-date_joined")
+        )

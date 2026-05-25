@@ -27,8 +27,8 @@ services:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile
-      target: development
-    command: celery -A config worker -l info
+      target: celery-worker
+    restart: unless-stopped
     volumes:
       - .:/app
     env_file:
@@ -49,8 +49,8 @@ services:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile
-      target: development
-    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+      target: celery-beat
+    restart: unless-stopped
     volumes:
       - .:/app
     env_file:

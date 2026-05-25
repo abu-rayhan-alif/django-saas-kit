@@ -79,11 +79,17 @@ class RBACService:
         Return ``True`` iff *user* is authenticated and holds one of *roles*
         in *tenant*.
 
-        Role membership is strictly tenant-scoped — a role granted in tenant A
-        has no effect in tenant B.
+        Django superusers are implicitly granted all roles across all tenants
+        so that platform admins can manage any workspace without explicit
+        role assignment.
+
+        Role membership is otherwise strictly tenant-scoped — a role granted
+        in tenant A has no effect in tenant B.
         """
         if not user or not getattr(user, "is_authenticated", False):
             return False
+        if getattr(user, "is_superuser", False):
+            return True
         return UserTenantRole.objects.filter(
             user_id=user.pk, tenant=tenant, role__in=roles
         ).exists()

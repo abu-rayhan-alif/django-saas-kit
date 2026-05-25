@@ -7,8 +7,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
@@ -67,25 +65,18 @@ class PasswordResetService:
         token = default_token_generator.make_token(user)
         frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
         reset_link = f"{frontend_url}/reset-password/?uid={uid}&token={token}"
-
         hours_valid = settings.PASSWORD_RESET_TIMEOUT // 3600
-        context = {
-            "user_name": user.get_full_name() or user.username,
-            "reset_link": reset_link,
-            "uid": uid,
-            "token": token,
-            "hours_valid": hours_valid,
-        }
-        body = render_to_string("emails/password_reset.txt", context)
-        html_body = render_to_string("emails/password_reset.html", context)
 
-        send_mail(
-            subject="Password Reset Request",
-            message=body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-            html_message=html_body,
+        # Queue via Celery — never block the request on SMTP availability.
+        from apps.authentication.tasks import send_password_reset_email  # noqa: PLC0415
+
+        send_password_reset_email.delay(
+            recipient_email=user.email,
+            user_name=user.get_full_name() or user.username,
+            reset_link=reset_link,
+            uid=uid,
+            token=token,
+            hours_valid=hours_valid,
         )
 
     @staticmethod

@@ -51,6 +51,10 @@ class UserTenantRole(models.Model):
     class Meta:
         unique_together = ("user", "tenant")
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "role"], name="rbac_tenant_role_idx"),
+            models.Index(fields=["user", "tenant"], name="rbac_user_tenant_idx"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.user} — {self.role} in {self.tenant}"

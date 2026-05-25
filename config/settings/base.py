@@ -50,6 +50,7 @@ LOCAL_APPS = [
     "apps.tenants",
     "apps.rbac",
     "apps.notifications",
+    "apps.billing",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -190,6 +191,10 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 60 * 60 * 24,  # every 24 hours
     },
 }
+
+# Stripe
+STRIPE_SECRET_KEY = get_str("STRIPE_SECRET_KEY", default="")
+STRIPE_WEBHOOK_SECRET = get_str("STRIPE_WEBHOOK_SECRET", default="")
 # SAAS-502 — default retry policy for tasks using TASK_RETRY_DECORATOR_KWARGS
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True

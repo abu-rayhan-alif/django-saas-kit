@@ -26,6 +26,21 @@ explicit_package_bases = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR"
 packages = ["apps", "config", "examples", "services"]
 
+# Strict mode on security-critical modules — expand as codebase matures
+[[tool.mypy.overrides]]
+module = [
+    "apps.tenants.*",
+    "apps.rbac.*",
+    "apps.billing.*",
+    "services.rbac.*",
+    "services.billing.*",
+    "services.tenant_context",
+]
+strict = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+warn_return_any = true
+
 [tool.django-stubs]
 django_settings_module = "config.settings.mypy"
 
@@ -36,7 +51,7 @@ addopts = "-ra --strict-markers"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["config", "services"]
+source = ["apps", "config", "services"]
 omit = ["*/migrations/*", "*/tests/*", "manage.py"]
 
 [tool.coverage.report]
