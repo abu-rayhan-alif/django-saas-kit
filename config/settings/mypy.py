@@ -6,7 +6,9 @@ Does not require a .env file or running services.
 
 import os
 
-os.environ.setdefault("SECRET_KEY", "mypy-only-not-for-production-never-use-this-in-real-environments")
+os.environ.setdefault(
+    "SECRET_KEY", "mypy-only-not-for-production-never-use-this-in-real-environments"
+)
 os.environ.setdefault("DEBUG", "True")
 os.environ.setdefault("ALLOWED_HOSTS", "localhost,127.0.0.1")
 os.environ.setdefault("DATABASE_URL", "sqlite:///mypy.db")
