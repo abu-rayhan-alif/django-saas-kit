@@ -11,3 +11,11 @@ class ValidationServiceError(ServiceError):
 
 class ConflictServiceError(ServiceError):
     """Resource already exists or state conflict."""
+
+
+class PlanLimitExceededError(ServiceError):
+    """Operation would exceed the tenant's subscription plan limits."""
+
+
+class NotFoundServiceError(ServiceError):
+    """Requested resource does not exist."""

@@ -45,6 +45,16 @@ class RBACService:
             tenant=tenant,
             defaults={"role": role, "assigned_by_id": assigned_by.pk if assigned_by else None},
         )
+        from apps.audit.models import AuditLog  # noqa: PLC0415
+        from services.audit import AuditService  # noqa: PLC0415
+        AuditService.log(
+            AuditLog.Action.ROLE_ASSIGNED,
+            tenant=tenant,
+            actor=assigned_by,
+            resource_type="User",
+            resource_id=str(user.pk),
+            metadata={"role": role, "target_email": getattr(user, "email", "")},
+        )
         return obj
 
     @staticmethod
@@ -55,6 +65,16 @@ class RBACService:
         Returns ``True`` if a role was deleted, ``False`` if none existed.
         """
         deleted, _ = UserTenantRole.objects.filter(user_id=user.pk, tenant=tenant).delete()
+        if deleted:
+            from apps.audit.models import AuditLog  # noqa: PLC0415
+            from services.audit import AuditService  # noqa: PLC0415
+            AuditService.log(
+                AuditLog.Action.ROLE_REVOKED,
+                tenant=tenant,
+                resource_type="User",
+                resource_id=str(user.pk),
+                metadata={"target_email": getattr(user, "email", "")},
+            )
         return bool(deleted)
 
     # ------------------------------------------------------------------

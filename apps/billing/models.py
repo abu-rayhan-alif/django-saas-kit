@@ -1,4 +1,4 @@
-"""Billing models — Subscription state per Tenant."""
+"""Billing models — Plan definitions, Subscription state per Tenant."""
 
 from __future__ import annotations
 
@@ -6,6 +6,40 @@ import uuid
 
 from django.db import models
 from django.utils import timezone
+
+
+class Plan(models.Model):
+    """
+    A subscription plan that defines feature limits for a tenant.
+
+    Plans are created/managed in the Django admin and matched to Stripe
+    price IDs.  When billing is disabled, assign the ``free`` plan.
+    """
+
+    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(max_length=100)
+    stripe_price_id = models.CharField(max_length=255, blank=True, default="")
+    max_members = models.PositiveIntegerField(
+        default=5,
+        help_text="Maximum number of members per tenant. 0 = unlimited.",
+    )
+    max_storage_mb = models.PositiveIntegerField(
+        default=1024,
+        help_text="Storage quota in MiB. 0 = unlimited.",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def is_unlimited_members(self) -> bool:
+        return self.max_members == 0
+
+    def is_unlimited_storage(self) -> bool:
+        return self.max_storage_mb == 0
 
 
 class Subscription(models.Model):
@@ -22,6 +56,13 @@ class Subscription(models.Model):
         "tenants.Tenant",
         on_delete=models.CASCADE,
         related_name="subscription",
+    )
+    plan = models.ForeignKey(
+        Plan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="subscriptions",
     )
     stripe_customer_id = models.CharField(max_length=255, unique=True, db_index=True)
     stripe_subscription_id = models.CharField(

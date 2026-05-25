@@ -17,8 +17,10 @@ from apps.authentication.serializers import (
     PasswordResetRequestSerializer,
     RegisterSerializer,
 )
+from apps.audit.models import AuditLog
 from apps.common.throttling import PasswordResetRateThrottle, RegisterRateThrottle
 from apps.users.serializers import UserSerializer
+from services.audit import AuditService
 
 
 def _demo_examples(*examples: OpenApiExample) -> list[OpenApiExample]:
@@ -86,6 +88,13 @@ class RegisterView(APIView):
         except ConflictServiceError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
 
+        AuditService.log(
+            AuditLog.Action.USER_REGISTERED,
+            request=request,
+            resource_type="User",
+            resource_id=str(user.pk),
+            metadata={"username": user.username},
+        )
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -123,6 +132,11 @@ class PasswordResetRequestView(APIView):
 
         PasswordResetService.request_reset(email=serializer.validated_data["email"])
 
+        AuditService.log(
+            AuditLog.Action.PASSWORD_RESET_REQUESTED,
+            request=request,
+            metadata={"email": serializer.validated_data["email"]},
+        )
         return Response(
             {"detail": "If that email is registered, a reset link has been sent."},
             status=status.HTTP_200_OK,

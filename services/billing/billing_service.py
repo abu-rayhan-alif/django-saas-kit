@@ -61,6 +61,15 @@ class BillingService:
             ).get("id", "")
             BillingService._apply_period(sub, obj)
             sub.save()
+        from apps.audit.models import AuditLog  # noqa: PLC0415
+        from services.audit import AuditService  # noqa: PLC0415
+        AuditService.log(
+            AuditLog.Action.SUBSCRIPTION_CREATED,
+            tenant=sub.tenant,
+            resource_type="Subscription",
+            resource_id=str(sub.pk),
+            metadata={"status": status, "stripe_sub_id": stripe_sub_id},
+        )
         log.info("billing.subscription_created", tenant_id=str(sub.tenant_id), status=status)
 
     @staticmethod
@@ -104,6 +113,14 @@ class BillingService:
             sub.status = Subscription.Status.CANCELED
             sub.grace_period_end = None
             sub.save(update_fields=["status", "grace_period_end", "updated_at"])
+        from apps.audit.models import AuditLog  # noqa: PLC0415
+        from services.audit import AuditService  # noqa: PLC0415
+        AuditService.log(
+            AuditLog.Action.SUBSCRIPTION_CANCELED,
+            tenant=sub.tenant,
+            resource_type="Subscription",
+            resource_id=str(sub.pk),
+        )
         log.info("billing.subscription_canceled", tenant_id=str(sub.tenant_id))
 
     @staticmethod
