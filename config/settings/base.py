@@ -41,6 +41,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "channels",
     "waffle",
+    "storages",
 ]
 
 LOCAL_APPS = [
@@ -107,14 +108,54 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# ---------------------------------------------------------------------------
+# File storage — local filesystem by default; S3/MinIO when USE_S3=True.
+# Set USE_S3=True in docker-compose (already done) or .env for local dev.
+# In production point AWS_* vars at real S3 or a hosted MinIO instance.
+# ---------------------------------------------------------------------------
+USE_S3 = get_bool("USE_S3", default=False)
+
+if USE_S3:
+    # Credentials & bucket
+    AWS_ACCESS_KEY_ID = get_str("AWS_ACCESS_KEY_ID", default="")
+    AWS_SECRET_ACCESS_KEY = get_str("AWS_SECRET_ACCESS_KEY", default="")
+    AWS_STORAGE_BUCKET_NAME = get_str("AWS_STORAGE_BUCKET_NAME", default="saas-media")
+    AWS_S3_REGION_NAME = get_str("AWS_S3_REGION_NAME", default="us-east-1")
+
+    # For MinIO (local): point at the MinIO container. Leave empty for real S3.
+    AWS_S3_ENDPOINT_URL = get_str("AWS_S3_ENDPOINT_URL", default="")
+
+    # Public URL base for generated file URLs.
+    # MinIO local:  "localhost:9000/<bucket>"
+    # Real S3:      "<bucket>.s3.amazonaws.com"  (leave empty to auto-generate)
+    AWS_S3_CUSTOM_DOMAIN = get_str("AWS_S3_CUSTOM_DOMAIN", default="")
+
+    AWS_DEFAULT_ACL = "private"           # never expose files publicly by default
+    AWS_S3_FILE_OVERWRITE = False         # keep original filename on collision
+    AWS_QUERYSTRING_AUTH = True           # signed URLs (expires in 1 h)
+    AWS_QUERYSTRING_EXPIRE = 3600
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

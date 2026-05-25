@@ -60,3 +60,16 @@ ALLOWED_HOSTS = [
     "testserver",
     ".localhost",
 ]
+
+# ---------------------------------------------------------------------------
+# Storage — always use local filesystem in tests (no MinIO/S3 needed).
+# ---------------------------------------------------------------------------
+USE_S3 = False
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

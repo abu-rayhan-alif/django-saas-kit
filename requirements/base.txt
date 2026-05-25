@@ -19,3 +19,5 @@ channels>=4.0,<5
 channels-redis>=4.0,<5
 django-waffle>=4.1,<6
 stripe>=10.0,<12
+django-storages[s3]>=1.14,<2
+boto3>=1.35,<2
