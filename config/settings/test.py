@@ -13,13 +13,13 @@ overrides the .env file, so CI always uses real PostgreSQL.
 # than falling back to global_settings.DEBUG=False.
 DEBUG = True
 
-import os
-import tempfile
-from pathlib import Path
+import os  # noqa: E402
+import tempfile  # noqa: E402
+from pathlib import Path  # noqa: E402
 
-from config.env import get_database_url_config
+from config.env import get_database_url_config  # noqa: E402
 
-from .local import *  # noqa: F403
+from .local import *  # noqa: E402, F403
 
 # Re-affirm after the star import (belt-and-suspenders).
 DEBUG = True
