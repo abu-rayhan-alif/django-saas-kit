@@ -37,11 +37,11 @@ def ensure_testserver_domain(db):
     Domain-specific tests (alpha.localhost, beta.localhost) are unaffected because
     they query against their own tenant, not the test tenant.
     """
+    from apps.rbac.models import RoleChoices, UserTenantRole
+    from apps.tenants.models import Domain, Tenant
     from django.contrib.auth import get_user_model
     from django.db.models.signals import post_save
 
-    from apps.rbac.models import RoleChoices, UserTenantRole
-    from apps.tenants.models import Domain, Tenant
     from tests import suppress_auto_tenant as _suppress
 
     tenant, _ = Tenant.objects.get_or_create(
@@ -59,8 +59,16 @@ def ensure_testserver_domain(db):
     def _assign_to_test_tenant(sender, instance, created, **kwargs):
         from services.demo.seed_service import _seeding  # noqa: PLC0415
 
-        if created and not getattr(_suppress, "active", False) and not getattr(_seeding, "active", False):
-            role = RoleChoices.ADMIN if (instance.is_staff or instance.is_superuser) else RoleChoices.MEMBER
+        if (
+            created
+            and not getattr(_suppress, "active", False)
+            and not getattr(_seeding, "active", False)
+        ):
+            role = (
+                RoleChoices.ADMIN
+                if (instance.is_staff or instance.is_superuser)
+                else RoleChoices.MEMBER
+            )
             UserTenantRole.objects.get_or_create(
                 user=instance,
                 tenant=tenant,

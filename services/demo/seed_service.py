@@ -6,10 +6,6 @@ import threading
 from dataclasses import dataclass
 
 from apps.rbac.models import RoleChoices
-
-# Set .active=True while seed() runs so the conftest post_save signal does not
-# create an extra test-tenant role for demo users.
-_seeding = threading.local()
 from apps.tenants.models import Domain, Tenant
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -17,6 +13,10 @@ from django.db import transaction
 from examples.demo_config import DEMO_ADMIN, DEMO_TENANTS
 
 from services.rbac import RBACService
+
+# Set .active=True while seed() runs so the conftest post_save signal does not
+# create an extra test-tenant role for demo users.
+_seeding = threading.local()
 
 User = get_user_model()
 

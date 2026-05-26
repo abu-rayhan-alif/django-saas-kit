@@ -7,6 +7,7 @@ break role-count assertions (e.g. GDPR tests, seed-service idempotency tests).
 """
 
 import pytest
+
 from tests import suppress_auto_tenant as _suppress
 
 
