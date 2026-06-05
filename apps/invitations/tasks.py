@@ -25,9 +25,18 @@ def send_invitation_email(
     role: str,
     accept_url: str,
 ) -> None:
-    """Send a tenant invitation email to *recipient_email*."""
+    """Send a tenant invitation email (HTML + plain text)."""
+    from django.template.loader import render_to_string
+
     subject = f"You've been invited to join {tenant_name}"
-    body = (
+    ctx = {
+        "tenant_name": tenant_name,
+        "invited_by_name": invited_by_name,
+        "role": role,
+        "accept_url": accept_url,
+    }
+    html_body = render_to_string("emails/invitation.html", ctx)
+    plain_body = (
         f"Hi,\n\n"
         f"{invited_by_name} has invited you to join {tenant_name} as a {role}.\n\n"
         f"Accept your invitation here (expires in 72 hours):\n"
@@ -37,12 +46,13 @@ def send_invitation_email(
     try:
         send_mail(
             subject=subject,
-            message=body,
+            message=plain_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[recipient_email],
+            html_message=html_body,
             fail_silently=False,
         )
         log.info("invitation.email_sent", recipient=recipient_email, tenant=tenant_name)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.warning("invitation.email_failed", recipient=recipient_email, exc=str(exc))
         raise self.retry(exc=exc) from exc

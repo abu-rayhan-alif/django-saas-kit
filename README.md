@@ -99,6 +99,8 @@ python manage.py runserver
 ### Auth & Identity
 - JWT access tokens (15 min) + rotating refresh tokens (7 days)
 - Token blacklist on logout
+- **Social OAuth** — Google & GitHub login (`POST /auth/social/`)
+- **Two-Factor Auth (TOTP)** — Google Authenticator / Authy compatible
 - Self-service password reset via email
 - Login rate limiting (5/min default)
 
@@ -113,13 +115,25 @@ python manage.py runserver
 - Permission checks in one decorator
 - Role assignment + revocation endpoints
 
+### User Profiles
+- Extended profile: avatar upload, bio, phone, timezone
+- `GET /users/me/` returns user + profile + 2FA status in one call
+- `PATCH /users/me/profile/` for partial updates
+
 </td>
 <td width="50%" valign="top">
+
+### Billing (Stripe)
+- Plan model with member + storage limits
+- Subscription lifecycle: trialing → active → past\_due → canceled
+- Grace period during dunning
+- Stripe webhook processing (idempotent, Celery-backed)
 
 ### Platform
 - Celery workers + Beat scheduler (Redis broker)
 - Django Channels — real-time WebSocket notifications
-- Feature flags via `django-waffle`
+- **Feature flags** — per-tenant overrides on top of `django-waffle`
+- **Plan-based rate limiting** — `TenantPlanThrottle` per subscription tier
 - Structured JSON logs (structlog) with request + trace IDs
 
 ### Developer Experience
@@ -191,15 +205,20 @@ python manage.py runserver
 ```
 django-saas-kit/
 ├── apps/
-│   ├── authentication/     # JWT, password reset, registration
-│   ├── common/             # Pagination, exceptions, middleware, logging
+│   ├── authentication/     # JWT, password reset, registration, OAuth, 2FA
+│   ├── billing/            # Stripe plans, subscriptions, webhook handler
+│   ├── common/             # Pagination, exceptions, middleware, throttling
+│   ├── features/           # Per-tenant feature flags (waffle + overrides)
+│   ├── invitations/        # Token-based team invitations
 │   ├── notifications/      # WebSocket + DB notifications
+│   ├── audit/              # Immutable audit log
 │   ├── rbac/               # Roles, permissions
 │   ├── tenants/            # Tenant model, Domain model, middleware
-│   └── users/              # User model, profile, tasks
+│   └── users/              # User profile, avatar, tasks
 │
 ├── services/               # Pure business logic (no HTTP)
-│   ├── auth/               # Password reset service
+│   ├── auth/               # Password reset, social auth service
+│   ├── features/           # FeatureService — flag resolution
 │   ├── notifications/      # Notification service
 │   ├── rbac/               # RBAC service
 │   ├── tenants/            # TenantService.create_tenant()
@@ -231,11 +250,14 @@ All endpoints live under `/api/v1/`. Authenticate with `Authorization: Bearer <a
 
 | Resource | Base path | Key endpoints |
 |----------|-----------|---------------|
-| **Auth** | `/api/v1/auth/` | `POST /token/` · `POST /token/refresh/` · `POST /register/` |
-| **Users** | `/api/v1/users/` | `GET /me/` · `PATCH /me/` |
+| **Auth** | `/api/v1/auth/` | `POST /token/` · `POST /register/` · `POST /social/` |
+| **2FA** | `/api/v1/auth/2fa/` | `GET /setup/` · `POST /enable/` · `POST /complete/` |
+| **Users** | `/api/v1/users/` | `GET /me/` · `PATCH /me/profile/` |
 | **Tenants** | `/api/v1/tenants/` | `GET /` · `POST /` |
 | **RBAC** | `/api/v1/rbac/<tenant_id>/` | `GET /roles/` · `POST /roles/assign/` |
 | **Notifications** | `/api/v1/notifications/` | `GET /` · `PATCH /<id>/read/` |
+| **Billing** | `/api/v1/billing/` | `POST /webhook/` |
+| **Features** | `/api/v1/features/` | `GET /` · `GET /<flag_name>/` |
 
 **Get a token in 3 lines:**
 ```bash
@@ -244,7 +266,102 @@ curl -s -X POST http://tenant1.localhost:8000/api/v1/auth/token/ \
   -d '{"username":"admin","password":"yourpassword"}' | jq .access
 ```
 
+**Social login (Google / GitHub):**
+```bash
+curl -s -X POST http://tenant1.localhost:8000/api/v1/auth/social/ \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "google", "access_token": "<oauth_token>"}'
+```
+
 → Full interactive docs: [localhost:8000/api/docs/](http://localhost:8000/api/docs/)
+
+---
+
+## Two-Factor Authentication
+
+Enable TOTP 2FA for any user account (Google Authenticator, Authy, etc.):
+
+```bash
+# 1. Get setup QR code (authenticated)
+GET /api/v1/auth/2fa/setup/
+# → returns secret + provisioning_uri + qr_svg
+
+# 2. Scan QR in your authenticator app, then verify the first code
+POST /api/v1/auth/2fa/enable/    {"code": "123456"}
+# → returns backup_codes (save these!)
+
+# 3. On next login, if 2FA is enabled the token endpoint returns:
+#    {"two_fa_required": true, "session_key": "..."}
+# Complete login with:
+POST /api/v1/auth/2fa/complete/  {"session_key": "...", "code": "123456"}
+# → returns normal JWT pair
+```
+
+---
+
+## Social OAuth
+
+The OAuth flow is frontend-initiated — your client handles the redirect and callback, then hands the access token to the API:
+
+```
+User clicks "Login with Google"
+    → Frontend redirects to Google OAuth consent
+    → Google redirects back with code
+    → Frontend exchanges code for access_token
+    → POST /api/v1/auth/social/ {"provider":"google","access_token":"..."}
+    → API returns JWT pair (creates account on first login)
+```
+
+Supported providers: `google`, `github`.
+
+---
+
+## Feature Flags
+
+Feature flags combine global `django-waffle` switches with per-tenant overrides:
+
+```python
+from services.features import FeatureService
+
+# In a view — reads tenant from request automatically
+if FeatureService.is_enabled("advanced_analytics", request=request):
+    ...
+
+# In a service / task
+if FeatureService.is_enabled("bulk_export", tenant=tenant):
+    ...
+
+# Check all flags at once (used by the frontend)
+# GET /api/v1/features/
+# → {"advanced_analytics": true, "bulk_export": false, ...}
+```
+
+Per-plan flags are configured in settings and synced automatically on subscription changes:
+
+```python
+# config/settings/base.py
+PLAN_FEATURE_FLAGS = {
+    "free":       {"api_access": False, "advanced_analytics": False},
+    "starter":    {"api_access": True,  "advanced_analytics": False},
+    "pro":        {"api_access": True,  "advanced_analytics": True},
+    "enterprise": {"api_access": True,  "advanced_analytics": True, "sso": True},
+}
+```
+
+Admin overrides live in Django Admin under **Tenant Feature Flags**.
+
+---
+
+## Plan-Based Rate Limiting
+
+Add `TenantPlanThrottle` to any view to enforce subscription-tier rate limits:
+
+```python
+from apps.common.throttling import TenantPlanThrottle
+
+class MyView(APIView):
+    throttle_classes = [TenantPlanThrottle]
+```
 
 ---
 
@@ -303,7 +420,15 @@ cp .env.example .env   # then edit as needed
 | `JWT_REFRESH_TOKEN_LIFETIME_DAYS` | | `7` | Refresh token TTL |
 | `EMAIL_BACKEND` | | `console` | Swap for SMTP in prod |
 | `DEFAULT_FROM_EMAIL` | | `noreply@example.com` | From address |
-| `FRONTEND_URL` | | `http://localhost:3000` | Password-reset links |
+| `FRONTEND_URL` | | `http://localhost:3000` | Password-reset & billing links |
+| `BILLING_PORTAL_URL` | | `$FRONTEND_URL/billing` | Billing email CTA |
+| `SITE_NAME` | | `Django SaaS Kit` | Email branding |
+| `STRIPE_SECRET_KEY` | Billing | — | Stripe API key |
+| `STRIPE_WEBHOOK_SECRET` | Billing | — | Webhook signature verification |
+| `THROTTLE_PLAN_FREE` | | `60/minute` | Rate limit for free plan |
+| `THROTTLE_PLAN_STARTER` | | `300/minute` | Rate limit for starter plan |
+| `THROTTLE_PLAN_PRO` | | `1000/minute` | Rate limit for pro plan |
+| `THROTTLE_PLAN_ENTERPRISE` | | `10000/minute` | Rate limit for enterprise plan |
 | `SENTRY_DSN` | Prod | — | Error tracking |
 
 ---
@@ -350,7 +475,7 @@ docker compose exec web python manage.py delete_user_data <user_id> --hard-delet
 docker compose exec web python manage.py delete_user_data <user_id> --no-input
 ```
 
-What gets erased: username · email · name · password · all notifications · all roles · all JWT tokens.
+What gets erased: username · email · name · password · profile · all notifications · all roles · all JWT tokens.
 
 → Policy + FK table: [docs/gdpr.md](docs/gdpr.md)
 
@@ -361,14 +486,17 @@ What gets erased: username · email · name · password · all notifications · 
 | Layer | Technology |
 |-------|-----------|
 | Framework | Django 5 + Django REST Framework |
-| Auth | `djangorestframework-simplejwt` |
+| Auth | `djangorestframework-simplejwt` + `pyotp` (TOTP 2FA) |
+| Social Auth | Custom OAuth token exchange (Google, GitHub) |
 | Database | PostgreSQL 16 |
 | Cache / Broker | Redis 7 |
 | Async tasks | Celery + Celery Beat |
 | Real-time | Django Channels (WebSocket) |
 | API docs | `drf-spectacular` (OpenAPI 3) |
 | Logging | `structlog` (JSON in prod, console in dev) |
-| Feature flags | `django-waffle` |
+| Feature flags | `django-waffle` + per-tenant overrides |
+| Billing | Stripe (webhooks, subscriptions, dunning) |
+| File storage | Local filesystem / S3-compatible (MinIO in dev) |
 | Error tracking | Sentry (optional, gate with `SENTRY_DSN`) |
 | Linting | `ruff` + `mypy` |
 | CI | GitHub Actions |
@@ -389,20 +517,6 @@ push / PR
 ```
 
 Configuration: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-
----
-
-## Architecture Decision Records
-
-| # | Decision | Status |
-|---|----------|--------|
-| [ADR-001](docs/adr/001-use-postgresql.md) | PostgreSQL as primary database | Accepted |
-| [ADR-002](docs/adr/002-why-celery.md) | Celery for async tasks | Accepted |
-| [ADR-003](docs/adr/003-why-jwt.md) | JWT for API authentication | Accepted |
-| [ADR-004](docs/adr/004-why-redis.md) | Redis for cache + broker | Accepted |
-| [ADR-005](docs/adr/005-django-environ-vs-python-decouple.md) | python-decouple for config | Accepted |
-| [ADR-006](docs/adr/006-sentry-vs-prometheus.md) | Sentry-first observability | Accepted |
-| [ADR-007](docs/adr/007-orm-query-strategy.md) | ORM query strategy | Accepted |
 
 ---
 

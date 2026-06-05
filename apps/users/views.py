@@ -9,7 +9,8 @@ from services.users import CreateUserInput, UserService
 
 from apps.rbac.permissions import HasRolePermission
 from apps.users.filters import UserFilter
-from apps.users.serializers import UserCreateSerializer, UserSerializer
+from apps.users.models import UserProfile
+from apps.users.serializers import UserCreateSerializer, UserProfileSerializer, UserSerializer, UserWithProfileSerializer
 
 User = get_user_model()
 
@@ -75,3 +76,86 @@ class UserListView(generics.ListAPIView):
         if tenant is None:
             return User.objects.none()
         return User.objects.filter(tenant_roles__tenant=tenant).distinct().order_by("-date_joined")
+
+
+class MeView(APIView):
+    """
+    GET /api/v1/users/me/
+
+    Return the authenticated user's full profile (user fields + profile extension + 2FA status).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Get current user (with profile)",
+        responses={200: UserWithProfileSerializer},
+    )
+    def get(self, request):
+        # Ensure profile row exists
+        UserProfile.objects.get_or_create(user=request.user)
+        serializer = UserWithProfileSerializer(request.user)
+        return Response(serializer.data)
+
+
+class ProfileView(APIView):
+    """
+    GET  /api/v1/users/me/profile/  — retrieve profile fields
+    PATCH /api/v1/users/me/profile/ — update bio, phone, timezone, avatar
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def _get_profile(self, user):
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        return profile
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Get profile",
+        responses={200: UserProfileSerializer},
+    )
+    def get(self, request):
+        serializer = UserProfileSerializer(self._get_profile(request.user))
+        return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Update profile (partial)",
+        request=UserProfileSerializer,
+        responses={200: UserProfileSerializer},
+    )
+    def patch(self, request):
+        profile = self._get_profile(request.user)
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Replace profile (full update)",
+        request=UserProfileSerializer,
+        responses={200: UserProfileSerializer},
+    )
+    def put(self, request):
+        profile = self._get_profile(request.user)
+        serializer = UserProfileSerializer(profile, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Delete avatar",
+        responses={204: None},
+    )
+    def delete(self, request):
+        """DELETE /api/v1/users/me/profile/avatar/ — clears the avatar field."""
+        profile = self._get_profile(request.user)
+        if profile.avatar:
+            profile.avatar.delete(save=False)
+            profile.avatar = None
+            profile.save(update_fields=["avatar", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

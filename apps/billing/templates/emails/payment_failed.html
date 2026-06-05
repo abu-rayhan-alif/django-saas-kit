@@ -1,0 +1,42 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Action required: Payment failed{% endblock %}
+{% block badge %}Billing{% endblock %}
+
+{% block content %}
+  <p>Hi {{ user_name }},</p>
+  <div class="alert-box">
+    <strong>Your recent payment failed.</strong><br />
+    We were unable to charge the payment method on file for
+    <strong>{{ tenant_name }}</strong>.
+  </div>
+  <p>
+    To avoid service interruption, please update your payment method before
+    your grace period ends.
+  </p>
+  <div class="meta-row">
+    <span>Workspace</span>
+    <strong>{{ tenant_name }}</strong>
+  </div>
+  <div class="meta-row">
+    <span>Plan</span>
+    <strong>{{ plan_name }}</strong>
+  </div>
+  <div class="meta-row">
+    <span>Grace period ends</span>
+    <strong>{{ grace_period_end }}</strong>
+  </div>
+  <div class="cta-wrap" style="margin-top:24px;">
+    <a class="cta cta-danger" href="{{ billing_url }}">Update Payment Method</a>
+  </div>
+  <hr class="divider" />
+  <p style="font-size:13px; color:#71717a;">
+    If you believe this is an error or need help, please reply to this email
+    or <a href="mailto:support@example.com">contact support</a>.
+  </p>
+{% endblock %}
+
+{% block footer %}
+  Billing notification from Django SaaS Kit for {{ tenant_name }}.<br />
+  <a href="mailto:support@example.com">Contact support</a> if you need help.
+{% endblock %}

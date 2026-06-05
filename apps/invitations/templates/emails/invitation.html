@@ -1,0 +1,31 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}You're invited to join {{ tenant_name }}{% endblock %}
+{% block badge %}Invitation{% endblock %}
+
+{% block content %}
+  <p>Hi there,</p>
+  <p>
+    <strong>{{ invited_by_name }}</strong> has invited you to join
+    <strong>{{ tenant_name }}</strong> as a <strong>{{ role }}</strong>.
+  </p>
+  <div class="alert-box info">
+    This invitation expires in <strong>72 hours</strong>.
+    If you already have an account, you'll be added to the workspace automatically.
+  </div>
+  <div class="cta-wrap">
+    <a class="cta cta-info" href="{{ accept_url }}">Accept Invitation</a>
+  </div>
+  <p>Or copy and paste this link:</p>
+  <div class="code-block">{{ accept_url }}</div>
+  <hr class="divider" />
+  <p style="font-size:13px; color:#71717a;">
+    If you were not expecting this invitation, you can safely ignore this email.
+    You will not be added to {{ tenant_name }} unless you click the button above.
+  </p>
+{% endblock %}
+
+{% block footer %}
+  You received this invitation from Django SaaS Kit on behalf of {{ tenant_name }}.<br />
+  Not expecting this? <a href="mailto:support@example.com">Contact support</a>.
+{% endblock %}
