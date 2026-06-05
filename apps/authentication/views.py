@@ -199,6 +199,47 @@ class PasswordResetConfirmView(APIView):
     ),
 )
 class ThrottledTokenObtainPairView(TokenObtainPairView):
-    """Token endpoint with login-scoped rate limiting (5/minute by default)."""
+    """
+    Token endpoint with login-scoped rate limiting (5/minute by default).
+
+    If the authenticating user has 2FA enabled, this view does NOT return a
+    JWT pair.  Instead it returns::
+
+        {"two_fa_required": true, "session_key": "<key>"}
+
+    The client must then POST ``{"session_key": "<key>", "code": "<totp>"}``
+    to ``/api/v1/auth/2fa/complete/`` to receive the actual JWT pair.
+    The session_key expires after 5 minutes.
+    """
 
     throttle_scope = "login"
+
+    def post(self, request, *args, **kwargs):
+        import secrets as _secrets
+
+        from django.core.cache import cache
+
+        response = super().post(request, *args, **kwargs)
+
+        # super() raises on bad credentials, so reaching here means auth succeeded.
+        # Identify the user from the validated serializer.
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=False)
+            user = serializer.user  # type: ignore[attr-defined]
+        except Exception:  # noqa: BLE001
+            return response
+
+        if user is None:
+            return response
+
+        totp_obj = getattr(user, "totp", None)
+        if totp_obj and totp_obj.is_enabled:
+            session_key = _secrets.token_urlsafe(32)
+            cache.set(f"2fa_pre_auth:{session_key}", user.pk, timeout=300)
+            return Response(
+                {"two_fa_required": True, "session_key": session_key},
+                status=status.HTTP_200_OK,
+            )
+
+        return response

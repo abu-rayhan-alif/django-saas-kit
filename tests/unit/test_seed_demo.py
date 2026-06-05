@@ -82,8 +82,8 @@ def test_openapi_schema_includes_demo_login_example(api_client):
         ),
         None,
     )
-    assert (
-        demo_example is not None
-    ), f"Demo login example missing from schema keys: {list(examples.keys())}"
+    assert demo_example is not None, (
+        f"Demo login example missing from schema keys: {list(examples.keys())}"
+    )
     assert demo_example["value"]["password"] == DEMO_ADMIN.password
     assert "seed_demo" in demo_example.get("description", "").lower()

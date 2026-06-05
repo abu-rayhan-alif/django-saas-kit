@@ -1,0 +1,42 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Your trial ends in {{ days_remaining }} day{{ days_remaining|pluralize }}{% endblock %}
+{% block badge %}Billing{% endblock %}
+
+{% block content %}
+  <p>Hi {{ user_name }},</p>
+  <p>
+    Your free trial for <strong>{{ tenant_name }}</strong> ends in
+    <strong>{{ days_remaining }} day{{ days_remaining|pluralize }}</strong>
+    on <strong>{{ trial_end_date }}</strong>.
+  </p>
+  <p>
+    To keep your team up and running without interruption, add a payment method
+    before your trial expires.
+  </p>
+  <div class="meta-row">
+    <span>Workspace</span>
+    <strong>{{ tenant_name }}</strong>
+  </div>
+  <div class="meta-row">
+    <span>Current plan</span>
+    <strong>{{ plan_name }}</strong>
+  </div>
+  <div class="meta-row">
+    <span>Trial ends</span>
+    <strong>{{ trial_end_date }}</strong>
+  </div>
+  <div class="cta-wrap" style="margin-top:24px;">
+    <a class="cta" href="{{ billing_url }}">Add Payment Method</a>
+  </div>
+  <hr class="divider" />
+  <p style="font-size:13px; color:#71717a;">
+    If you have questions about plans and pricing, just reply to this email —
+    we're happy to help.
+  </p>
+{% endblock %}
+
+{% block footer %}
+  Trial reminder from Django SaaS Kit for {{ tenant_name }}.<br />
+  Questions? <a href="mailto:support@example.com">Contact support</a>.
+{% endblock %}

@@ -114,3 +114,60 @@ def test_default_throttle_rates_configured(settings):
     assert rates["login"] == "5/minute"
     assert rates["user"] == "100/minute"
     assert rates["anon"] == "20/minute"
+
+
+@pytest.mark.django_db
+def test_tenant_plan_throttle_uses_plan_rate(settings):
+    """TenantPlanThrottle applies per-plan rate from PLAN_THROTTLE_RATES."""
+    from apps.billing.models import Plan, Subscription
+    from apps.common.throttling import TenantPlanThrottle
+    from apps.tenants.models import Tenant
+    from django.contrib.auth import get_user_model
+    from django.core.cache import cache
+    from django.test import RequestFactory
+    from rest_framework.views import APIView
+
+    User = get_user_model()
+    tenant = Tenant.objects.create(name="Throttle Co", slug="throttleco", schema_name="throttleco")
+    plan = Plan.objects.create(slug="free", name="Free")
+    Subscription.objects.create(
+        tenant=tenant,
+        plan=plan,
+        stripe_customer_id="cus_throttle",
+    )
+    user = User.objects.create_user(username="planuser", password="pass", email="plan@example.com")
+
+    cache.clear()
+    request = RequestFactory().get("/api/v1/features/")
+    request.user = user
+    request.tenant = tenant
+
+    throttle = TenantPlanThrottle()
+    view = APIView()
+
+    assert throttle.allow_request(request, view) is True
+    assert throttle.allow_request(request, view) is True
+
+
+def test_tenant_plan_throttle_allows_anonymous_requests():
+    from apps.common.throttling import TenantPlanThrottle
+    from django.contrib.auth.models import AnonymousUser
+    from django.test import RequestFactory
+    from rest_framework.views import APIView
+
+    request = RequestFactory().get("/api/v1/features/")
+    request.user = AnonymousUser()
+
+    throttle = TenantPlanThrottle()
+    assert throttle.allow_request(request, APIView()) is True
+
+
+def test_resolve_plan_rate_returns_none_without_tenant():
+    from apps.common.throttling import _resolve_plan_rate
+    from django.contrib.auth.models import AnonymousUser
+    from django.test import RequestFactory
+
+    request = RequestFactory().get("/")
+    request.user = AnonymousUser()
+
+    assert _resolve_plan_rate(request) is None

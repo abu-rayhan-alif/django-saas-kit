@@ -32,9 +32,9 @@ def _auth_headers(token: str) -> dict:
 
 
 def _assert_envelope(data: dict) -> None:
-    assert _ENVELOPE_KEYS == set(
-        data.keys()
-    ), f"Expected keys {_ENVELOPE_KEYS}, got {set(data.keys())}"
+    assert _ENVELOPE_KEYS == set(data.keys()), (
+        f"Expected keys {_ENVELOPE_KEYS}, got {set(data.keys())}"
+    )
     assert isinstance(data["error"], str) and data["error"]
     assert isinstance(data["message"], str) and data["message"]
     assert isinstance(data["details"], dict)
