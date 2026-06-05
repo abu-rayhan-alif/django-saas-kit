@@ -11,13 +11,13 @@ from celery import shared_task
 log = structlog.get_logger(__name__)
 
 
-@shared_task(
+@shared_task(  # type: ignore[untyped-decorator]
     name="apps.billing.tasks.handle_stripe_event",
     bind=True,
     max_retries=5,
     default_retry_delay=30,
 )
-def handle_stripe_event(  # type: ignore[untyped-decorator]
+def handle_stripe_event(
     self: Any, event_id: str, event_type: str, event_data: dict[str, Any]
 ) -> str:
     """Process a Stripe webhook event asynchronously."""
@@ -32,13 +32,13 @@ def handle_stripe_event(  # type: ignore[untyped-decorator]
     return f"stripe_event:processed:{event_id}"
 
 
-@shared_task(
+@shared_task(  # type: ignore[untyped-decorator]
     name="apps.billing.tasks.send_dunning_email",
     bind=True,
     max_retries=3,
     default_retry_delay=60,
 )
-def send_dunning_email(self: Any, tenant_id: str) -> str:  # type: ignore[untyped-decorator]
+def send_dunning_email(self: Any, tenant_id: str) -> str:
     """Send a payment-failed notification to the tenant owner (HTML + plain text)."""
     from django.conf import settings
     from django.core.mail import send_mail
@@ -100,15 +100,13 @@ def send_dunning_email(self: Any, tenant_id: str) -> str:  # type: ignore[untype
     return f"dunning:sent:{tenant_id}"
 
 
-@shared_task(
+@shared_task(  # type: ignore[untyped-decorator]
     name="apps.billing.tasks.send_trial_ending_email",
     bind=True,
     max_retries=3,
     default_retry_delay=60,
 )
-def send_trial_ending_email(  # type: ignore[untyped-decorator]
-    self: Any, tenant_id: str, days_remaining: int = 3
-) -> str:
+def send_trial_ending_email(self: Any, tenant_id: str, days_remaining: int = 3) -> str:
     """Send a trial-ending reminder to the tenant owner."""
     from django.conf import settings
     from django.core.mail import send_mail
