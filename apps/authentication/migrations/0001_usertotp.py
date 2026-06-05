@@ -48,9 +48,7 @@ class Migration(migrations.Migration):
                 ("is_enabled", models.BooleanField(default=False)),
                 (
                     "backup_codes",
-                    models.JSONField(
-                        default=apps.authentication.models._generate_backup_codes
-                    ),
+                    models.JSONField(default=apps.authentication.models._generate_backup_codes),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),

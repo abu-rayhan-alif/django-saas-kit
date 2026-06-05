@@ -40,7 +40,10 @@ class Migration(migrations.Migration):
                 (
                     "source",
                     models.CharField(
-                        choices=[("manual", "Manual (admin override)"), ("plan", "Plan (auto-set by subscription plan)")],
+                        choices=[
+                            ("manual", "Manual (admin override)"),
+                            ("plan", "Plan (auto-set by subscription plan)"),
+                        ],
                         default="manual",
                         max_length=20,
                     ),

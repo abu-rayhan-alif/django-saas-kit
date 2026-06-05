@@ -158,9 +158,7 @@ class SocialAuthService:
                 user.set_unusable_password()
                 user.save()
         except IntegrityError as exc:
-            raise ConflictServiceError(
-                "An account with those credentials already exists."
-            ) from exc
+            raise ConflictServiceError("An account with those credentials already exists.") from exc
 
         return user
 

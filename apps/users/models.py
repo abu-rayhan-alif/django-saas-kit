@@ -64,6 +64,7 @@ class UserProfile(models.Model):
 
     def clean(self) -> None:
         from django.core.exceptions import ValidationError
+
         if self.timezone and self.timezone not in _VALID_TIMEZONES:
             raise ValidationError({"timezone": f"Unknown timezone: {self.timezone!r}"})
 

@@ -186,7 +186,9 @@ REST_FRAMEWORK = {
         "login": get_str("THROTTLE_LOGIN_RATE", default="5/minute"),
         "register": get_str("THROTTLE_REGISTER_RATE", default="3/hour"),
         "password_reset": get_str("THROTTLE_PASSWORD_RESET_RATE", default="5/hour"),
-        "plan": get_str("THROTTLE_USER_RATE", default="100/minute"),  # fallback for TenantPlanThrottle
+        "plan": get_str(
+            "THROTTLE_USER_RATE", default="100/minute"
+        ),  # fallback for TenantPlanThrottle
     },
     "EXCEPTION_HANDLER": "apps.common.exceptions.saas_exception_handler",
 }
@@ -205,7 +207,10 @@ PLAN_THROTTLE_RATES: dict[str, str] = {
 # General application settings
 SITE_NAME = get_str("SITE_NAME", default="Django SaaS Kit")
 FRONTEND_URL = get_str("FRONTEND_URL", default="http://localhost:3000")
-BILLING_PORTAL_URL = get_str("BILLING_PORTAL_URL", default=f"{get_str('FRONTEND_URL', default='http://localhost:3000')}/billing")
+BILLING_PORTAL_URL = get_str(
+    "BILLING_PORTAL_URL",
+    default=f"{get_str('FRONTEND_URL', default='http://localhost:3000')}/billing",
+)
 
 # ---------------------------------------------------------------------------
 # Feature flags

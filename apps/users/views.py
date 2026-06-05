@@ -10,7 +10,12 @@ from services.users import CreateUserInput, UserService
 from apps.rbac.permissions import HasRolePermission
 from apps.users.filters import UserFilter
 from apps.users.models import UserProfile
-from apps.users.serializers import UserCreateSerializer, UserProfileSerializer, UserSerializer, UserWithProfileSerializer
+from apps.users.serializers import (
+    UserCreateSerializer,
+    UserProfileSerializer,
+    UserSerializer,
+    UserWithProfileSerializer,
+)
 
 User = get_user_model()
 

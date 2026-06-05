@@ -17,7 +17,9 @@ log = structlog.get_logger(__name__)
     max_retries=5,
     default_retry_delay=30,
 )
-def handle_stripe_event(self: Any, event_id: str, event_type: str, event_data: dict[str, Any]) -> str:
+def handle_stripe_event(
+    self: Any, event_id: str, event_type: str, event_data: dict[str, Any]
+) -> str:
     """Process a Stripe webhook event asynchronously."""
     from services.billing.billing_service import BillingService
 

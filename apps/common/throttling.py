@@ -86,6 +86,7 @@ class UserRateThrottle(SimpleRateThrottle):
 # Plan-based throttling
 # ---------------------------------------------------------------------------
 
+
 def _resolve_plan_rate(request):
     """Return the throttle rate for the tenant's plan, or None to use default."""
     from django.conf import settings as django_settings
