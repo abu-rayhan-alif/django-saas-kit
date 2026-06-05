@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import apps.authentication.models
-import django.db.models.deletion
 import uuid
 
+import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
+
+import apps.authentication.models
 
 
 class Migration(migrations.Migration):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import io
-import urllib.parse
 
 import pyotp
 import qrcode

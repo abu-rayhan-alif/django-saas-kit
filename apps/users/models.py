@@ -11,7 +11,7 @@ from django.db import models
 _VALID_TIMEZONES = available_timezones()
 
 
-def _avatar_upload_path(instance: "UserProfile", filename: str) -> str:
+def _avatar_upload_path(instance: UserProfile, filename: str) -> str:
     ext = filename.rsplit(".", 1)[-1].lower()
     return f"avatars/{instance.user_id}/{uuid.uuid4().hex}.{ext}"
 

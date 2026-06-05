@@ -44,7 +44,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         }
 
     def validate_timezone(self, value: str) -> str:
-        from zoneinfo import ZoneInfoNotFoundError, available_timezones
+        from zoneinfo import available_timezones
 
         if value and value not in available_timezones():
             raise serializers.ValidationError(f"Unknown timezone: {value!r}")

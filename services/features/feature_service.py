@@ -30,9 +30,8 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rest_framework.request import Request
-
     from apps.tenants.models import Tenant
+    from rest_framework.request import Request
 
 log = logging.getLogger(__name__)
 
@@ -73,8 +72,8 @@ class FeatureService:
     def is_enabled(
         flag_name: str,
         *,
-        request: "Request | None" = None,
-        tenant: "Tenant | None" = None,
+        request: Request | None = None,
+        tenant: Tenant | None = None,
     ) -> bool:
         """
         Return True if *flag_name* is enabled for the given context.
@@ -109,7 +108,7 @@ class FeatureService:
         return _get_default(flag_name)
 
     @staticmethod
-    def for_tenant(tenant: "Tenant", request=None) -> dict[str, bool]:
+    def for_tenant(tenant: Tenant, request=None) -> dict[str, bool]:
         """
         Return a dict of all known flag names and their resolved state for *tenant*.
 
@@ -117,9 +116,8 @@ class FeatureService:
         - All TenantFeatureFlag rows for this tenant
         - All keys in FEATURE_FLAGS_DEFAULTS
         """
-        from django.conf import settings
-
         from apps.features.models import TenantFeatureFlag
+        from django.conf import settings
 
         defaults: dict[str, bool] = getattr(settings, "FEATURE_FLAGS_DEFAULTS", {})
 
@@ -141,7 +139,7 @@ class FeatureService:
 
     @staticmethod
     def set_for_tenant(
-        tenant: "Tenant",
+        tenant: Tenant,
         flag_name: str,
         is_enabled: bool,
         source: str = "manual",
@@ -157,7 +155,7 @@ class FeatureService:
         )
 
     @staticmethod
-    def sync_plan_flags(tenant: "Tenant") -> None:
+    def sync_plan_flags(tenant: Tenant) -> None:
         """
         Auto-set plan-based flags when a tenant's subscription changes.
 
