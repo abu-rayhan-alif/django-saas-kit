@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-def _get_waffle_flag(flag_name: str, request) -> bool | None:
+def _get_waffle_flag(flag_name: str, request: Request | None) -> bool | None:
     """Check django-waffle for a Flag or Switch; return None if not found."""
     try:
         import waffle
@@ -108,7 +108,7 @@ class FeatureService:
         return _get_default(flag_name)
 
     @staticmethod
-    def for_tenant(tenant: Tenant, request=None) -> dict[str, bool]:
+    def for_tenant(tenant: Tenant, request: Request | None = None) -> dict[str, bool]:
         """
         Return a dict of all known flag names and their resolved state for *tenant*.
 

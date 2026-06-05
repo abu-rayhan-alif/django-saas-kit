@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from services.features import FeatureService
@@ -48,7 +49,7 @@ class FeatureFlagsView(APIView):
             )
         },
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         tenant = getattr(request, "tenant", None)
         if tenant is None:
             return Response({})
@@ -85,6 +86,6 @@ class FeatureFlagDetailView(APIView):
             )
         },
     )
-    def get(self, request, flag_name: str):
+    def get(self, request: Request, flag_name: str) -> Response:
         enabled = FeatureService.is_enabled(flag_name, request=request)
         return Response({"flag_name": flag_name, "enabled": enabled})

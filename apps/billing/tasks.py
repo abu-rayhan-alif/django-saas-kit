@@ -17,7 +17,7 @@ log = structlog.get_logger(__name__)
     max_retries=5,
     default_retry_delay=30,
 )
-def handle_stripe_event(
+def handle_stripe_event(  # type: ignore[untyped-decorator]
     self: Any, event_id: str, event_type: str, event_data: dict[str, Any]
 ) -> str:
     """Process a Stripe webhook event asynchronously."""
@@ -38,7 +38,7 @@ def handle_stripe_event(
     max_retries=3,
     default_retry_delay=60,
 )
-def send_dunning_email(self: Any, tenant_id: str) -> str:
+def send_dunning_email(self: Any, tenant_id: str) -> str:  # type: ignore[untyped-decorator]
     """Send a payment-failed notification to the tenant owner (HTML + plain text)."""
     from django.conf import settings
     from django.core.mail import send_mail
@@ -106,7 +106,9 @@ def send_dunning_email(self: Any, tenant_id: str) -> str:
     max_retries=3,
     default_retry_delay=60,
 )
-def send_trial_ending_email(self: Any, tenant_id: str, days_remaining: int = 3) -> str:
+def send_trial_ending_email(  # type: ignore[untyped-decorator]
+    self: Any, tenant_id: str, days_remaining: int = 3
+) -> str:
     """Send a trial-ending reminder to the tenant owner."""
     from django.conf import settings
     from django.core.mail import send_mail
