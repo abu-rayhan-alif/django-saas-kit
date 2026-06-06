@@ -11,10 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dependabot weekly updates for Python packages and GitHub Actions (SAAS-703)
 - CI workflow documentation and coverage artifacts ([docs/testing.md](docs/testing.md)) (SAAS-801)
+- Per-tenant feature flags API and `FeatureService` ([docs/feature-flags.md](docs/feature-flags.md))
+- Social OAuth login (Google, GitHub) and TOTP two-factor authentication
+- User profile endpoints (`GET/PATCH /users/me/profile/`)
+- Billing Celery tasks for Stripe webhooks, dunning, and trial-ending emails
+- Test coverage for features, billing tasks, social auth, 2FA, and user profiles
 
 ### Changed
 
+- Align pre-commit Ruff hook with local dev (`ruff` 0.15.14)
+
 ### Fixed
+
+- Pre-commit Ruff version mismatch causing CI format failures
+- Mypy type annotations in features and billing modules
 
 ### Removed
 
