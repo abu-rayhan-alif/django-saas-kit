@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-commit Ruff version mismatch causing CI format failures
 - Mypy type annotations in features and billing modules
 
-### Removed
+### Removed##
 
 ---
 
