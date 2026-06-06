@@ -9,8 +9,6 @@ from rest_framework.views import APIView
 from services.exceptions import ConflictServiceError, ValidationServiceError
 from services.users import CreateUserInput, UserService
 
-logger = logging.getLogger(__name__)
-
 from apps.rbac.permissions import HasRolePermission
 from apps.users.filters import UserFilter
 from apps.users.models import UserProfile
@@ -20,6 +18,8 @@ from apps.users.serializers import (
     UserSerializer,
     UserWithProfileSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
