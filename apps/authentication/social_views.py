@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -10,6 +12,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from services.auth.social_auth_service import SocialAuthService
 from services.exceptions import ConflictServiceError, ValidationServiceError
+
+logger = logging.getLogger(__name__)
 
 
 class SocialAuthView(APIView):
@@ -108,9 +112,11 @@ class SocialAuthView(APIView):
         try:
             user = SocialAuthService.authenticate(provider, access_token)
         except ValidationServiceError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_401_UNAUTHORIZED)
+            logger.debug("Social auth validation error: provider=%s", provider, exc_info=exc)
+            return Response({"detail": exc.user_message}, status=status.HTTP_401_UNAUTHORIZED)
         except ConflictServiceError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+            logger.debug("Social auth conflict: provider=%s", provider, exc_info=exc)
+            return Response({"detail": exc.user_message}, status=status.HTTP_409_CONFLICT)
 
         created = not getattr(user, "_pre_existing", True)
         refresh = RefreshToken.for_user(user)

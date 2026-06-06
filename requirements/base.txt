@@ -24,4 +24,4 @@ boto3>=1.35,<2
 requests>=2.32,<3
 pyotp>=2.9,<3
 qrcode[pil]>=8.0,<9
-Pillow>=11.0,<12
+Pillow>=12.2.0,<13

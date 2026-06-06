@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
@@ -16,6 +18,8 @@ from apps.users.serializers import (
     UserSerializer,
     UserWithProfileSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -40,9 +44,11 @@ class UserCreateView(APIView):
                 CreateUserInput(**serializer.validated_data),
             )
         except ValidationServiceError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.debug("User creation validation error", exc_info=exc)
+            return Response({"detail": exc.user_message}, status=status.HTTP_400_BAD_REQUEST)
         except ConflictServiceError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+            logger.debug("User creation conflict", exc_info=exc)
+            return Response({"detail": exc.user_message}, status=status.HTTP_409_CONFLICT)
 
         return Response(
             UserSerializer(user).data,
