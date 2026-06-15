@@ -2,7 +2,7 @@ Django>=5.0,<5.2
 djangorestframework>=3.17.1,<4
 # Use python-decouple only — do NOT install the unrelated "decouple" package on PyPI
 python-decouple>=3.8,<4
-dj-database-url>=2.2,<3
+dj-database-url>=3.1.2,<4
 psycopg[binary]>=3.3.4,<4
 redis>=8.0.0,<9
 celery>=5.4,<6
