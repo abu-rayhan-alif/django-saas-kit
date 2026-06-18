@@ -1,4 +1,4 @@
-Django>=5.0,<5.2
+Django>=6.0.6,<6.1
 djangorestframework>=3.17.1,<4
 # Use python-decouple only — do NOT install the unrelated "decouple" package on PyPI
 python-decouple>=3.8,<4
